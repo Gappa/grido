@@ -153,7 +153,7 @@ class Operation extends Component
      */
     public function addCheckers(\Nette\Forms\Container $container)
     {
-        $items = $this->grid->getData();
+        $items = $this->grid->getData(null, FALSE);
         $primaryKey = $this->getPrimaryKey();
 
         foreach ($items as $item) {
