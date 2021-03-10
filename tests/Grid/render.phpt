@@ -18,14 +18,14 @@ require_once __DIR__ . '/../bootstrap.php';
 test(function()
 {
     Helper::grid(function(Grid $grid, TestPresenter $presenter) {
-        $data = $presenter->context->getService('dibi_sqlite')
+        $data = $presenter->container->getService('dibi_sqlite')
             ->select('u.*, c.title AS country')
             ->from('[user] u')
             ->leftJoin('[country] c')->on('u.country_code = c.code')
             ->fetchAll();
         $grid->setModel($data);
         $grid->defaultPerPage = 4;
-        $grid->rowCallback = function(\DibiRow $row, \Nette\Utils\Html $tr) {
+        $grid->rowCallback = function(\Dibi\Row $row, \Nette\Utils\Html $tr) {
             $tr->class[] = $row['firstname'];
             return $tr;
         };

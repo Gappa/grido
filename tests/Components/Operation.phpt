@@ -61,7 +61,7 @@ class OperationTest extends \Tester\TestCase
             $grid->addColumnText('b', 'B');
             $grid->setOperation(['edit' => 'Edit', 'del' => 'Del'], function($operation, $id) {
                 Assert::same('edit', $operation);
-                Assert::same(['2','4'], $id);
+                Assert::same(['2', '4'], $id);
             });
         };
         Helper::grid(function(Grid $grid) use ($definition) {
@@ -70,14 +70,15 @@ class OperationTest extends \Tester\TestCase
 
         $params = [
             'do' => 'grid-form-submit',
-            'count' => 10,
+            'count' => '10',
             Grid::BUTTONS => [Operation::ID => 'OK'],
             Operation::ID => [
                 Operation::ID => 'edit',
                 '2' => 'on',
                 '4' => 'on',
-                '9' => 'on'
-        ]];
+                '9' => 'on',
+            ]
+        ];
 
         Helper::request($params);
 

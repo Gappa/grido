@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the Grido (http://grido.bugyik.cz)
+ * This file is part of the Grido (https://github.com/o5/grido)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -85,7 +85,7 @@ class Paginator extends \Nette\Utils\Paginator
     /**
      * @return int
      */
-    public function getPage()
+    public function getPage(): int
     {
         if ($this->page === NULL) {
             $this->page = parent::getPage();

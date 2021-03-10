@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the Grido (http://grido.bugyik.cz)
+ * This file is part of the Grido (https://github.com/o5/grido)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -163,7 +163,7 @@ class Export extends Component implements \Nette\Application\IResponse
      * @param \Nette\Http\IResponse $httpResponse
      * @return void
      */
-    public function send(\Nette\Http\IRequest $httpRequest, \Nette\Http\IResponse $httpResponse)
+    public function send(\Nette\Http\IRequest $httpRequest, \Nette\Http\IResponse $httpResponse): void
     {
         $encoding = 'utf-8';
         $label = $this->label

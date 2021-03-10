@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the Grido (http://grido.bugyik.cz)
+ * This file is part of the Grido (https://github.com/o5/grido)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -28,7 +28,6 @@ use Nette;
  */
 class Condition
 {
-
     use Nette\SmartObject;
 
     const OPERATOR_OR = 'OR';

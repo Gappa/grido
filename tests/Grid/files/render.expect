@@ -2,6 +2,7 @@
 
 
 
+
 <form action="/test/" method="get" id="frm-grid-form" class="ajax grido" data-grido-refresh-handler="/test/?do=grid-refresh">
 
 <table id="grid">
@@ -25,21 +26,25 @@
                 <th class="actions center">Actions</th>
         </tr>
         <tr class="filter inner">
-
+            
                     <th class="grid-filter-firstname">
                             <input type="text" name="filters[firstname]" class="text" id="frm-grid-form-filters-firstname">
+
                     </th>
 
                     <th class="grid-filter-surname">
                             <input type="text" name="filters[surname]" class="text" id="frm-grid-form-filters-surname">
+
                     </th>
 
                     <th class="grid-filter-gender">
                             <input type="text" name="filters[gender]" class="text" id="frm-grid-form-filters-gender">
+
                     </th>
 
                     <th class="grid-filter-birthday">
                             <input type="text" name="filters[birthday]" class="text date" autocomplete="off" id="frm-grid-form-filters-birthday">
+
                     </th>
 
             <th class="actions">
@@ -57,7 +62,7 @@
                     <input type="submit" name="buttons[operations]" class="hide" value="OK">
                 </span>
                 <span class="paginator">
-
+                    
                         <span class="disabled " href="/test/?grid-page=0&amp;do=grid-page"><i class=""></i> Previous</span>
                             <span class="disabled ">1</span>
                             <a class="ajax " href="/test/?grid-page=2&amp;do=grid-page">2</a>
@@ -75,6 +80,7 @@
                     <span class="count">
                         <label>Items 1 - 4 of 50</label>
                             <select name="count" title="Items per page" id="frm-grid-form-count"><option value="4" selected>4</option><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="50">50</option><option value="100">100</option></select>
+
                         <input type="submit" name="buttons[perPage]" value="Items per page" class="hide">
                     </span>
                     <span class="export">
@@ -105,7 +111,7 @@
                             25.10.1964
                     </td>
                 <td class="actions center">
-
+                    
 <a class="xxx" href="/test/edit/1">Edit</a>
 <a class="grid-action-delete yyy" href="/test/?grid-actions-delete-id=1&amp;do=grid-actions-delete-click">Delete</a>
 <button href="/test/?grid-actions-print-id=1&amp;do=grid-actions-print-click"></button>                </td>
@@ -118,7 +124,7 @@
                             Marij
                     </td>
                     <td class="grid-cell-surname">
-                            Rašpolić Příliš, žluťoučký &quot;kůň&quot; úpěl &#039;ďábelské&#039; ódy.
+                            Rašpolić Příliš, žluťoučký &quot;kůň&quot; úpěl &apos;ďábelské&apos; ódy.
 and newline &quot;test&quot;;
                     </td>
                     <td class="grid-cell-gender">
@@ -128,7 +134,7 @@ and newline &quot;test&quot;;
                             16.12.1972
                     </td>
                 <td class="actions center">
-
+                    
 <a class="xxx" href="/test/edit/20">Edit</a>
 <a class="grid-action-delete yyy" href="/test/?grid-actions-delete-id=20&amp;do=grid-actions-delete-click">Delete</a>
 <button href="/test/?grid-actions-print-id=20&amp;do=grid-actions-print-click"></button>                </td>
@@ -150,7 +156,7 @@ and newline &quot;test&quot;;
                             05.05.1963
                     </td>
                 <td class="actions center">
-
+                    
 <a class="xxx" href="/test/edit/39">Edit</a>
 <a class="grid-action-delete yyy" href="/test/?grid-actions-delete-id=39&amp;do=grid-actions-delete-click">Delete</a>
 <button href="/test/?grid-actions-print-id=39&amp;do=grid-actions-print-click"></button>                </td>
@@ -172,13 +178,14 @@ and newline &quot;test&quot;;
                             24.11.1972
                     </td>
                 <td class="actions center">
-
+                    
 <a class="xxx" href="/test/edit/58">Edit</a>
 <a class="grid-action-delete yyy" href="/test/?grid-actions-delete-id=58&amp;do=grid-actions-delete-click">Delete</a>
 <button href="/test/?grid-actions-print-id=58&amp;do=grid-actions-print-click"></button>                </td>
             </tr>
     </tbody>
 </table>
+
 <input type="hidden" name="do" value="grid-form-submit"></form>
 
 </div>

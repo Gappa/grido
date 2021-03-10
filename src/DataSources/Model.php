@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the Grido (http://grido.bugyik.cz)
+ * This file is part of the Grido (https://github.com/o5/grido)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -25,7 +25,7 @@ use Nette;
  */
 class Model
 {
-    use Nette\SmartObject;
+    use \Nette\SmartObject;
 
     /** @var array */
     public $callback = [];
@@ -39,7 +39,7 @@ class Model
      */
     public function __construct($model)
     {
-        if ($model instanceof \DibiFluent) {
+        if ($model instanceof \Dibi\Fluent) {
             $dataSource = new DibiFluent($model);
         } elseif ($model instanceof \Nette\Database\Table\Selection) {
             $dataSource = new NetteDatabase($model);
@@ -57,7 +57,7 @@ class Model
     }
 
     /**
-     * @return \IDataSource
+     * @return IDataSource
      */
     public function getDataSource()
     {

@@ -20,7 +20,7 @@ class Multirender extends \Tester\TestCase
     function helper($template)
     {
         $baseGrid = function($grid, TestPresenter $presenter) use ($template) {
-            $data = $presenter->context->getService('dibi_sqlite')
+            $data = $presenter->container->getService('dibi_sqlite')
                 ->select('u.*, c.title AS country')
                 ->from('[user] u')
                 ->leftJoin('[country] c')->on('u.country_code = c.code')
@@ -31,7 +31,8 @@ class Multirender extends \Tester\TestCase
             $grid->addColumnText('surname', 'Surname');
             $grid->addColumnText('gender', 'Gender');
             $grid->addColumnText('birthday', 'Birthday');
-            $grid->templateFile = $grid->customization->templateFiles[$template];
+            $templateFiles = $grid->customization->getTemplateFiles();
+            $grid->templateFile = $templateFiles[$template];
         };
 
         $addFilters = function($grid) {

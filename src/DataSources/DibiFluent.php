@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the Grido (http://grido.bugyik.cz)
+ * This file is part of the Grido (https://github.com/o5/grido)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -21,17 +21,17 @@ use Nette;
  * @subpackage  DataSources
  * @author      Petr Bugyík
  *
- * @property-read \DibiFluent $fluent
+ * @property-read \Dibi\Fluent $fluent
  * @property-read int $limit
  * @property-read int $offset
  * @property-read int $count
  * @property-read array $data
  */
-class DibiFluent  implements IDataSource
+class DibiFluent implements IDataSource
 {
-    use Nette\SmartObject;
+    use \Nette\SmartObject;
 
-    /** @var \DibiFluent */
+    /** @var \Dibi\Fluent */
     protected $fluent;
 
     /** @var int */
@@ -41,15 +41,15 @@ class DibiFluent  implements IDataSource
     protected $offset;
 
     /**
-     * @param \DibiFluent $fluent
+     * @param \Dibi\Fluent $fluent
      */
-    public function __construct(\DibiFluent $fluent)
+    public function __construct(\Dibi\Fluent $fluent)
     {
         $this->fluent = $fluent;
     }
 
     /**
-     * @return \DibiFluent
+     * @return \Dibi\Fluent
      */
     public function getFluent()
     {
@@ -74,9 +74,9 @@ class DibiFluent  implements IDataSource
 
     /**
      * @param \Grido\Components\Filters\Condition $condition
-     * @param \DibiFluent $fluent
+     * @param \Dibi\Fluent $fluent
      */
-    protected function makeWhere(\Grido\Components\Filters\Condition $condition, \DibiFluent $fluent = NULL)
+    protected function makeWhere(\Grido\Components\Filters\Condition $condition, \Dibi\Fluent $fluent = NULL)
     {
         $fluent = $fluent === NULL
             ? $this->fluent

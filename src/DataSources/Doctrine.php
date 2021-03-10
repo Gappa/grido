@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the Grido (http://grido.bugyik.cz)
+ * This file is part of the Grido (https://github.com/o5/grido)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -35,7 +35,7 @@ use Nette;
  */
 class Doctrine implements IDataSource
 {
-    use Nette\SmartObject;
+    use \Nette\SmartObject;
 
     /** @var \Doctrine\ORM\QueryBuilder */
     protected $qb;
@@ -98,7 +98,23 @@ class Doctrine implements IDataSource
      */
     public function getQuery()
     {
-        return $this->qb->getQuery();
+        return $this->_getQuery($this->qb);
+    }
+
+    /**
+     * Workaround for https://github.com/Kdyby/DoctrineCache/issues/23
+     *
+     * @param \Doctrine\ORM\QueryBuilder $qb
+     * @return \Doctrine\ORM\Query
+     */
+    private function _getQuery(\Doctrine\ORM\QueryBuilder $qb)
+    {
+        $query = $qb->getQuery();
+        $ttl = $query->getQueryCacheLifetime();
+        if (!\is_int($ttl)) {
+            $query->setQueryCacheLifetime(0);
+        }
+        return $query;
     }
 
     /**
@@ -206,7 +222,7 @@ class Doctrine implements IDataSource
         // Paginator is better if the query uses ManyToMany associations
         $result = $this->qb->getMaxResults() !== NULL || $this->qb->getFirstResult() !== NULL
             ? new Paginator($this->getQuery())
-            : $this->qb->getQuery()->getResult();
+            : $this->getQuery()->getResult();
 
         foreach ($result as $item) {
             // Return only entity itself
@@ -280,7 +296,7 @@ class Doctrine implements IDataSource
         }
 
         $items = [];
-        $data = $qb->getQuery()->getScalarResult();
+        $data = $this->_getQuery($qb)->getScalarResult();
         foreach ($data as $row) {
             if (is_string($column)) {
                 $value = (string) current($row);

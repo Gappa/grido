@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the Grido (http://grido.bugyik.cz)
+ * This file is part of the Grido (https://github.com/o5/grido)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -14,6 +14,7 @@ namespace Grido\Components;
 use Grido\Grid;
 use Grido\Helpers;
 use Grido\Exception;
+use Nette\Forms\Controls\SubmitButton;
 
 /**
  * Operation with one or more rows.
@@ -105,10 +106,10 @@ class Operation extends Component
     /**********************************************************************************************/
 
     /**
-     * @param \Nette\Forms\Controls\SubmitButton $button
+     * @param SubmitButton $button
      * @internal
      */
-    public function handleOperations(\Nette\Forms\Controls\SubmitButton $button)
+    public function handleOperations(SubmitButton $button)
     {
         $grid = $this->getGrid();
         !empty($grid->onRegistered) && $grid->onRegistered($grid);
@@ -131,7 +132,7 @@ class Operation extends Component
 
         foreach ($values as $key => $val) {
             if ($val) {
-                $ids[] = $key;
+                $ids[] = (string) $key;
             }
         }
 

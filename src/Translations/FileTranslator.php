@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the Grido (http://grido.bugyik.cz)
+ * This file is part of the Grido (https://github.com/o5/grido)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -23,7 +23,7 @@ use Nette;
  */
 class FileTranslator implements \Nette\Localization\ITranslator
 {
-    use Nette\SmartObject;
+    use \Nette\SmartObject;
 
     /** @var array */
     protected $translations = [];
@@ -66,13 +66,13 @@ class FileTranslator implements \Nette\Localization\ITranslator
 
     /**
      * @param string $message
-     * @param int $count plural
+     * @param ...$parameters
      * @return string
      */
-    public function translate($message, $count = NULL)
+    public function translate($message, ...$parameters): string
     {
         return isset($this->translations[$message])
             ? $this->translations[$message]
-            : $message;
+            : ($message ?? '');
     }
 }
