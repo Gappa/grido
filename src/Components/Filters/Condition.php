@@ -260,7 +260,6 @@ class Condition
             if (self::isOperator($column)) {
                 $operator = strtoupper($column);
                 $condition[] = " $operator ";
-
             } else {
                 $i = count($this->condition) > 1 ? $i : 0;
                 $condition[] = "{$prefix}$column{$suffix} {$this->condition[$i]}";

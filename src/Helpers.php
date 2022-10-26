@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -29,6 +30,4 @@ class Helpers
 	{
 		return str_replace('__', '.', $name);
 	}
-
-
 }

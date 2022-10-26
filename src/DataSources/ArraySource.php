@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -63,9 +64,9 @@ class ArraySource implements IDataSource
 				} else {
 					$i = count($condition->condition) > 1 ? $i : 0;
 					$results[] = (int) $this->compare(
-							$row[$column],
-							$condition->condition[$i],
-							isset($condition->value[$i]) ? $condition->value[$i] : NULL
+						$row[$column],
+						$condition->condition[$i],
+						isset($condition->value[$i]) ? $condition->value[$i] : NULL
 					);
 
 					$i++;
@@ -226,6 +227,4 @@ class ArraySource implements IDataSource
 		sort($items);
 		return array_values($items);
 	}
-
-
 }

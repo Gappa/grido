@@ -107,7 +107,7 @@ abstract class Column extends \Grido\Components\Component
     public function setReplacement(array $replacement, bool $translate = TRUE)
     {
         $this->replacements = $this->replacements + $replacement;
-		$this->translateReplacements = $translate;
+        $this->translateReplacements = $translate;
         return $this;
     }
 
@@ -327,10 +327,8 @@ abstract class Column extends \Grido\Components\Component
         $column = $this->getColumn();
         if (is_string($column)) {
             return $this->grid->getProperty($row, Helpers::unformatColumnName($column));
-
         } elseif (is_callable($column)) {
             return call_user_func_array($column, [$row]);
-
         } else {
             throw new Exception('Column must be string or callback.');
         }

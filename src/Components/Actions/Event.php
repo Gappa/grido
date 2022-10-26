@@ -41,7 +41,7 @@ class Event extends Action
         parent::__construct($grid, $name, $label);
 
         if ($onClick === NULL) {
-            $grid->onRender[] = function(Grid $grid) {
+            $grid->onRender[] = function (Grid $grid) {
                 if ($this->onClick === NULL) {
                     throw new Exception("Callback onClick in action '{$this->name}' must be set.");
                 }

@@ -79,6 +79,4 @@ class CsvExport extends BaseExport
 		$httpResponse->setHeader('Content-Type', "text/csv; charset=$this->encoding");
 		$httpResponse->setHeader('Content-Disposition', "attachment; filename=\"$label.csv\"");
 	}
-
-
 }

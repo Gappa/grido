@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -130,7 +131,7 @@ class Doctrine implements IDataSource
 		list($where) = $condition->__toArray(null, null, false);
 
 		$rand = $this->getRand();
-		$where = preg_replace_callback('/\?/', function() use ($rand) {
+		$where = preg_replace_callback('/\?/', function () use ($rand) {
 			static $i = -1;
 			$i++;
 			return ":$rand{$i}";
@@ -253,6 +254,4 @@ class Doctrine implements IDataSource
 		is_callable($column) && sort($items);
 		return array_values($items);
 	}
-
-
 }

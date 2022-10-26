@@ -136,8 +136,7 @@ abstract class Editable extends Column
         $options = $this->grid->getClientSideOptions();
         if (!isset($options['editable'])) { //only once
             $this->grid->setClientSideOptions(['editable' => TRUE]);
-            $this->grid->onRender[] = function(\Grido\Grid $grid)
-            {
+            $this->grid->onRender[] = function (\Grido\Grid $grid) {
                 foreach ($grid->getComponent(Column::ID)->getComponents() as $column) {
                     if (!$column instanceof Editable || !$column->isEditable()) {
                         continue;

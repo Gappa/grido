@@ -36,8 +36,8 @@ class PdfExport extends BaseExport
 						if (!isset($sums[$columnName])) {
 							$sums[$columnName] = 0;
 						}
-//						dump($row[$columnName], $column->getValueForSumCalculation($items), $column->getValue($items));
-//						$sums[$columnName] += $column->getValueForSumCalculation($items);
+						// dump($row[$columnName], $column->getValueForSumCalculation($items), $column->getValue($items));
+						// $sums[$columnName] += $column->getValueForSumCalculation($items);
 						$sums[$columnName] += $row[$columnName] * 100; // => cents
 					}
 				}
@@ -53,23 +53,23 @@ class PdfExport extends BaseExport
 		$template->data = \Nette\Utils\ArrayHash::from($formattedData);
 		$template->sums = \Nette\Utils\ArrayHash::from($sums);
 		$template->columns = $columns;
-//		dump($header, $row, $data, $columns, $template->data, $sums);die;
-//		\Utils\Basic::downloadFile(null, 'test.html', false, $template->renderToString());
+		// dump($header, $row, $data, $columns, $template->data, $sums);die;
+		// \Utils\Basic::downloadFile(null, 'test.html', false, $template->renderToString());
 
 		$pdf = new \Joseki\Application\Responses\PdfResponse($template);
 
 		// optional
-//		$pdf->documentTitle = date("Y-m-d H:i") . " PDF export"; // creates filename
+		// $pdf->documentTitle = date("Y-m-d H:i") . " PDF export"; // creates filename
 		$pdf->pageFormat = $this->options['pageFormat'] ?? count($columns) > 5 ? 'A4-L' : 'A4';
 		$mpdf = $pdf->getMPDF();
 		// Memory optim https://mpdf.github.io/troubleshooting/memory-problems.html
 		// https://mpdf.github.io/reference/mpdf-variables/simpletables.html
-//		$mpdf->simpleTables = true;
+		// $mpdf->simpleTables = true;
 		// https://mpdf.github.io/reference/mpdf-variables/packtabledata.html
-//		$mpdf->packTableData = true;
-//		$mpdf->setFooter("|© www.PROJECT.sk|");
-//		$pdf->outputDestination = $pdf::OUTPUT_DOWNLOAD;
-//		$pdf->save = $pdf::OUTPUT_DOWNLOAD;
+		// $mpdf->packTableData = true;
+		// $mpdf->setFooter("|© www.PROJECT.sk|");
+		// $pdf->outputDestination = $pdf::OUTPUT_DOWNLOAD;
+		// $pdf->save = $pdf::OUTPUT_DOWNLOAD;
 		echo $pdf->__toString();
 	}
 
@@ -83,6 +83,4 @@ class PdfExport extends BaseExport
 		$httpResponse->setHeader('Content-Type', "application/pdf; charset=$encoding");
 		$httpResponse->setHeader('Content-Disposition', "attachment; filename=\"$label.pdf\"");
 	}
-
-
 }

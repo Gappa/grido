@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -120,6 +121,4 @@ class Customization
 		$this->grid->setTemplateFile($this->getTemplateFiles()[self::TEMPLATE_BOOTSTRAP]);
 		return $this;
 	}
-
-
 }

@@ -57,7 +57,7 @@ class Text extends Filter
         $prototype->attrs['autocomplete'] = 'off';
         $prototype->class[] = 'suggest';
 
-        $this->grid->onRender[] = function() use ($prototype) {
+        $this->grid->onRender[] = function () use ($prototype) {
             $replacement = '-query-';
             $prototype->setAttribute('data-grido-suggest-replacement', $replacement);
             $prototype->setAttribute('data-grido-suggest-limit', $this->suggestionLimit);
@@ -143,7 +143,6 @@ class Text extends Filter
 
             $column = $this->suggestionColumn ? $this->suggestionColumn : current($this->getColumn());
             $items = $this->grid->model->suggest($column, $conditions, $this->suggestionLimit);
-
         } else {
             $items = call_user_func_array($this->suggestionCallback, [$query, $actualFilter, $conditions, $this]);
             if (!is_array($items)) {

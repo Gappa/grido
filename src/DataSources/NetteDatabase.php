@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -79,8 +80,8 @@ class NetteDatabase implements IDataSource
 	public function update($id, array $values, $idCol)
 	{
 		return (bool) $this->getSelection()
-				->where('?name = ?', $idCol, $id)
-				->update($values);
+			->where('?name = ?', $idCol, $id)
+			->update($values);
 	}
 
 
@@ -93,8 +94,8 @@ class NetteDatabase implements IDataSource
 	public function getRow($id, $idCol)
 	{
 		return $this->getSelection()
-				->where('?name = ?', $idCol, $id)
-				->fetch();
+			->where('?name = ?', $idCol, $id)
+			->fetch();
 	}
 
 
@@ -168,6 +169,4 @@ class NetteDatabase implements IDataSource
 		is_callable($column) && sort($items);
 		return array_values($items);
 	}
-
-
 }

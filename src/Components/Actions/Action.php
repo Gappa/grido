@@ -137,7 +137,6 @@ abstract class Action extends \Grido\Components\Component
     {
         if ($value === NULL) {
             unset($this->options[$key]);
-
         } else {
             $this->options[$key] = $value;
         }

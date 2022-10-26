@@ -175,6 +175,4 @@ abstract class BaseExport extends Component implements IResponse
 		}
 		$this->printData();
 	}
-
-
 }

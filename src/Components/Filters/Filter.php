@@ -231,13 +231,10 @@ abstract class Filter extends \Grido\Components\Component
 
         if ($this->where !== NULL) {
             $condition = Condition::setupFromCallback($this->where, $value);
-
         } elseif (is_string($condition)) {
             $condition = Condition::setup($this->getColumn(), $condition, $this->formatValue($value));
-
         } elseif (is_callable($condition)) {
             $condition = call_user_func_array($condition, [$value]);
-
         } elseif (is_array($condition)) {
             $condition = isset($condition[$value])
                 ? $condition[$value]
@@ -246,7 +243,6 @@ abstract class Filter extends \Grido\Components\Component
 
         if (is_array($condition)) { //for user-defined condition by array or callback
             $condition = Condition::setupFromArray($condition);
-
         } elseif ($condition !== NULL && !$condition instanceof Condition) {
             $type = gettype($condition);
             throw new Exception("Condition must be array or Condition object. $type given.");

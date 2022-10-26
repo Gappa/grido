@@ -73,7 +73,7 @@ abstract class Container extends \Nette\Application\UI\Control
     }
 
 
-	public function getOperation(bool $need = true): ?Operation
+    public function getOperation(bool $need = true): ?Operation
     {
         return $this->getComponent(Operation::ID, $need);
     }
@@ -100,7 +100,7 @@ abstract class Container extends \Nette\Application\UI\Control
      * @param bool $need
      * @return ?BaseExport[]
      */
-    public function getExports(bool $need = true)//: ?array
+    public function getExports(bool $need = true) //: ?array
     {
         $export = $this->getComponent(BaseExport::ID, $need);
         if ($export) {
@@ -232,13 +232,13 @@ abstract class Container extends \Nette\Application\UI\Control
     }
 
 
-	public function addColumnLink(string $name, string $label): Columns\Link
+    public function addColumnLink(string $name, string $label): Columns\Link
     {
         return new Columns\Link($this, $name, $label);
     }
 
 
-	public function addColumnDate(string $name, string $label, string $dateFormat = null): Columns\Date
+    public function addColumnDate(string $name, string $label, string $dateFormat = null): Columns\Date
     {
         return new Columns\Date($this, $name, $label, $dateFormat);
     }
@@ -252,7 +252,7 @@ abstract class Container extends \Nette\Application\UI\Control
     /**********************************************************************************************/
 
 
-	public function addFilterText(string $name, string $label): Filters\Text
+    public function addFilterText(string $name, string $label): Filters\Text
     {
         return new Filters\Text($this, $name, $label);
     }
@@ -264,7 +264,7 @@ abstract class Container extends \Nette\Application\UI\Control
     }
 
 
-	public function addFilterDateRange(string $name, string $label): Filters\DateRange
+    public function addFilterDateRange(string $name, string $label): Filters\DateRange
     {
         return new Filters\DateRange($this, $name, $label);
     }
@@ -276,13 +276,13 @@ abstract class Container extends \Nette\Application\UI\Control
     }
 
 
-	public function addFilterSelect(string $name, string $label, array $items = null, bool $multiple = false): Filters\Select
+    public function addFilterSelect(string $name, string $label, array $items = null, bool $multiple = false): Filters\Select
     {
         return new Filters\Select($this, $name, $label, $items, $multiple);
     }
 
 
-	public function addFilterNumber(string $name, string $label): Filters\Number
+    public function addFilterNumber(string $name, string $label): Filters\Number
     {
         return new Filters\Number($this, $name, $label);
     }
@@ -324,7 +324,7 @@ abstract class Container extends \Nette\Application\UI\Control
     }
 
 
-	public function addExport(BaseExport $export, string $name): BaseExport
+    public function addExport(BaseExport $export, string $name): BaseExport
     {
         $container = $this->getComponent(BaseExport::ID, false);
         if (!$container) {
@@ -356,7 +356,7 @@ abstract class Container extends \Nette\Application\UI\Control
      */
     public function setEditableColumns(callable $callback = null)
     {
-        $this->onRender[] = function(Grid $grid) use ($callback) {
+        $this->onRender[] = function (Grid $grid) use ($callback) {
             if (!$grid->hasColumns()) {
                 return;
             }

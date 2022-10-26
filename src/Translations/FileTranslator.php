@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -53,7 +54,7 @@ class FileTranslator implements \Nette\Localization\ITranslator
 			throw new Exception("Translations for language '$lang' not found.");
 		}
 
-		return include ($filename);
+		return include($filename);
 	}
 
 
@@ -63,6 +64,4 @@ class FileTranslator implements \Nette\Localization\ITranslator
 	{
 		return isset($this->translations[$message]) ? $this->translations[$message] : $message;
 	}
-
-
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -89,8 +90,8 @@ class DibiFluent implements IDataSource
 	{
 		$fluent = clone $this->fluent;
 		return $fluent
-				->where("%n = %s", $idCol, $id)
-				->fetch();
+			->where("%n = %s", $idCol, $id)
+			->fetch();
 	}
 
 
@@ -168,6 +169,4 @@ class DibiFluent implements IDataSource
 		is_callable($column) && sort($items);
 		return array_values($items);
 	}
-
-
 }

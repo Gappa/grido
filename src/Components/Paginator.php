@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -126,6 +127,4 @@ class Paginator extends \Nette\Utils\Paginator
 
 		return $this->countEnd;
 	}
-
-
 }

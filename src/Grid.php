@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -273,7 +274,7 @@ class Grid extends Components\Container
 	 */
 	public function setTemplateFile(string $file): Grid
 	{
-		$this->onRender[] = function() use ($file) {
+		$this->onRender[] = function () use ($file) {
 			$this->getTemplate()->add('gridoTemplate', $this->getTemplate()->getFile());
 			$this->getTemplate()->setFile($file);
 		};
@@ -837,13 +838,19 @@ class Grid extends Components\Container
 			$this->getTemplate()->add('paginator', $this->getPaginator());
 			$this->getTemplate()->add('customization', $this->getCustomization());
 			$this->getTemplate()->add('columns', $this->getComponent(Column::ID)->getComponents());
-			$this->getTemplate()->add('actions', $this->hasActions() ? $this->getComponent(Action::ID)->getComponents() : []
+			$this->getTemplate()->add(
+				'actions',
+				$this->hasActions() ? $this->getComponent(Action::ID)->getComponents() : []
 			);
 
-			$this->getTemplate()->add('buttons', $this->hasButtons() ? $this->getComponent(Button::ID)->getComponents() : []
+			$this->getTemplate()->add(
+				'buttons',
+				$this->hasButtons() ? $this->getComponent(Button::ID)->getComponents() : []
 			);
 
-			$this->getTemplate()->add('formFilters', $this->hasFilters() ? $form->getComponent(Filter::ID)->getComponents() : []
+			$this->getTemplate()->add(
+				'formFilters',
+				$this->hasFilters() ? $form->getComponent(Filter::ID)->getComponents() : []
 			);
 
 			$form['count']->setValue($this->getPerPage());
@@ -979,7 +986,7 @@ class Grid extends Components\Container
 			->onClick[] = [$this, 'handlePerPage'];
 
 		$form->addSelect('count', 'Count', $this->getItemsForCountSelect())
-				->setTranslator(null)
+			->setTranslator(null)
 			->controlPrototype->attrs['title'] = $this->getTranslator()->translate('Grido.ItemsPerPage');
 	}
 
@@ -1005,6 +1012,4 @@ class Grid extends Components\Container
 
 		$this->strictMode && trigger_error($message, E_USER_NOTICE);
 	}
-
-
 }

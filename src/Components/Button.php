@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -186,6 +187,4 @@ class Button extends Component
 	{
 		echo $this->getElement();
 	}
-
-
 }

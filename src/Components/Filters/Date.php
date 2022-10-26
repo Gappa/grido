@@ -92,7 +92,7 @@ class Date extends Text
      */
     public function __getCondition($value)
     {
-		if ($value === '' || $value === NULL) {
+        if ($value === '' || $value === NULL) {
             return FALSE; //skip
         }
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -48,7 +49,7 @@ class Operation extends Component
 			->addSelect(self::ID, 'Selected', $operations)
 			->setPrompt('Grido.Selected');
 
-		$grid->onRender[] = function(Grid $grid) {
+		$grid->onRender[] = function (Grid $grid) {
 			$this->addCheckers($grid['form'][Operation::ID]);
 		};
 
@@ -62,9 +63,10 @@ class Operation extends Component
 	public function setConfirm(string $operation, string $message): Operation
 	{
 		$message = $this->translate($message);
-		$this->grid->onRender[] = function(Grid $grid) use ($operation, $message) {
+		$this->grid->onRender[] = function (Grid $grid) use ($operation, $message) {
 			$grid['form'][Operation::ID][Operation::ID]->getControlPrototype()->setAttribute(
-				"data-grido-confirm-$operation", $message
+				"data-grido-confirm-$operation",
+				$message
 			);
 		};
 
@@ -155,11 +157,9 @@ class Operation extends Component
 			} catch (\Exception $e) {
 				throw new Exception(
 					'You should define some else primary key via $grid->setPrimaryKey() ' .
-					"because currently defined '$primaryKey' key is not suitable for operation feature."
+						"because currently defined '$primaryKey' key is not suitable for operation feature."
 				);
 			}
 		}
 	}
-
-
 }
