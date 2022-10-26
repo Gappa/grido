@@ -804,9 +804,13 @@ class Grid extends Components\Container
 		$template = parent::createTemplate();
 		$template->setFile($this->getCustomization()->getTemplateFiles()[Customization::TEMPLATE_DEFAULT]);
 		$latte = $template->getLatte();
-		$latte->addExtension(new \Latte\Essential\TranslatorExtension($this->getTranslator()));
-		$latte->addExtension(new \Latte\Essential\RawPhpExtension);
-
+		// latte/latte ^3.0
+		if (class_exists('\Latte\Essential\TranslatorExtension')) {
+			$latte->addExtension(new \Latte\Essential\TranslatorExtension($this->getTranslator()));
+			$latte->addExtension(new \Latte\Essential\RawPhpExtension);
+		} else {
+			$latte->addFilter('translate', [$this->getTranslator(), 'translate']);
+		}
 
 		return $template;
 	}
