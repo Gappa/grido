@@ -32,7 +32,7 @@
         this.$table = $('table', $element);
 
         this.name = this.$table.attr('id');
-        this.options = $.extend($.fn.grido.defaults, options, this.$table.data('grido-options') || {});
+        this.options = $.extend({}, $.fn.grido.defaults, options, this.$table.data('grido-options') || {});
     };
 
     Grido.Grid.prototype =
@@ -68,13 +68,27 @@
          */
         initFilters: function()
         {
-            var that = this;
+			var that = this;
+            // use timeout to allow user to select multiple values at once
+	        var formSubmitOnChangeTimeout = {};
+            var timeout4multipleSelect = 2000; // in milliseconds, if < 0 form will not be submitted after value had changed. May be overriden by `data-grido-submit-timeout` attribute
             $('.filter select, .filter [type=checkbox]', this.$element)
                 .off('change.grido')
                 .on('change.grido', function(){
-                    that.sendFilterForm();
+                    var $this = $(this);
+                    if ($this.is('select[multiple]')) {
+                        var timeout = $this.data('grido-submit-timeout') ?? timeout4multipleSelect;
+                        if (timeout >= 0) { // if negative, do not submit form
+                            var $formId = that.$element.attr('id');
+                            clearTimeout(formSubmitOnChangeTimeout[$formId]);
+                            formSubmitOnChangeTimeout[$formId] = window.setTimeout(function () {
+                                that.sendFilterForm();
+                            }, timeout);
+                        }
+                    } else {
+                        that.sendFilterForm();
+                    }
                 });
-
 
             $('.filter input, .filter textarea', this.$element)
                 .off('focus.grido')
@@ -421,6 +435,11 @@
 
         registerSuccessEvent: function()
         {
+			// avoid pushing popped state to History again causing having 2 same states in history
+			if ($.data(document, 'grido-popped')) {
+				$.data(document, 'grido-popped', false);
+				return;
+			}
             var that = this;
             this.grido.$element
                 .off('success.ajax.grido')
@@ -458,8 +477,6 @@
                 });
 
                 var query = this.getQueryString(params);
-
-                $.data(document, this.grido.name + '-query', query);
                 this.onSuccessEvent(params, query);
             }
         },
@@ -497,6 +514,9 @@
          */
         onSuccessEvent: function(params, url)
         {
+			// set flag to be checked in onPopState() to handle only own history stack
+			params.grido = true;
+			params.url = url;
             window.history.pushState(params, document.title, url);
         },
 
@@ -505,13 +525,21 @@
          */
         onPopState: function(event)
         {
-            var state = $.data(document, this.grido.name + '-query') || '',
-                query = window.location.search;
+			// handle only own history stack
+			var state = event.originalEvent.state || {};
+			if (!state.grido) {
+				return false;
+			}
 
-            if (state !== query) {
-                var url = this.getRefreshGridHandlerUrl(this.grido.$element);
-                this.doRequest(url + query.replace('?', '&'));
-            }
+//			var query = window.location.search;
+//			var url = this.getRefreshGridHandlerUrl(this.grido.$element);
+			var url = state.url || window.location.href;
+
+			// set 'popped' flag for ajax request to avoid pushing popped state to History again
+			// causing having 2 same states in history
+			$.data(document, 'grido-popped', true);
+//			this.doRequest(url + query.replace('?', '&'));
+			this.doRequest(url);
         },
 
         /**
@@ -728,7 +756,7 @@
                 data: data,
                 async: false
             })
-            .success(function(data) {
+            .done(function(data) {
                 control = data;
             });
 
@@ -797,7 +825,7 @@
                 data: data,
                 async: true
             })
-            .success(function(data) {
+            .done(function(data) {
                 if (data.updated === true) {
 		    if (data.html) {
 			$td.html(data.html);
