@@ -30,6 +30,7 @@ class CsvExport extends BaseExport
 	protected function printData(): void
 	{
 		$escape = function ($value) {
+			$value = (string) $value;
 			return preg_match("~[\"\n,;\t]~", $value) || $value === "" ? '"' . str_replace('"', '""', $value) . '"' : $value;
 		};
 
