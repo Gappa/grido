@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -27,17 +29,14 @@ class Model
 {
     use Nette\SmartObject;
 
-    /** @var array */
-    public $callback = [];
+    public array $callback = [];
 
-    /** @var IDataSource */
-    protected $dataSource;
+    protected IDataSource $dataSource;
 
     /**
-     * @param mixed $model
      * @throws Exception
      */
-    public function __construct($model)
+    public function __construct(mixed $model)
     {
         if ($model instanceof \Dibi\Fluent) {
             $dataSource = new DibiFluent($model);

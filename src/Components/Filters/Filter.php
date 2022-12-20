@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -13,6 +15,9 @@ namespace Grido\Components\Filters;
 
 use Grido\Helpers;
 use Grido\Exception;
+use Grido\Grid;
+use Nette\Forms\Controls\BaseControl;
+use Nette\Utils\Html;
 
 /**
  * Data filtering.
@@ -22,11 +27,11 @@ use Grido\Exception;
  * @author      Petr Bugyík
  *
  * @property-read array $column
- * @property-read string $wrapperPrototype
- * @property-read \Nette\Forms\Controls\BaseControl $control
- * @property-write string $condition
- * @property-write callable $where
- * @property-write string $formatValue
+ * @property-read ?Html $wrapperPrototype
+ * @property-read ?BaseControl $control
+ * @property-write mixed $condition
+ * @property-write ?callable $where
+ * @property-write ?string $formatValue
  * @property-write string $defaultValue
  */
 abstract class Filter extends \Grido\Components\Component
@@ -38,33 +43,23 @@ abstract class Filter extends \Grido\Components\Component
     const RENDER_INNER = 'inner';
     const RENDER_OUTER = 'outer';
 
-    /** @var mixed */
-    protected $optional;
+    protected mixed $optional;
 
-    /** @var array */
-    protected $column = [];
+    protected array $column = [];
 
-    /** @var string */
-    protected $condition = '= ?';
+    protected mixed $condition = '= ?';
 
-    /** @var callable */
-    protected $where;
+    /** @var ?callable */
+    protected $where = null;
 
-    /** @var string */
-    protected $formatValue;
+    protected ?string $formatValue = null;
 
-    /** @var \Nette\Utils\Html */
-    protected $wrapperPrototype;
+    protected ?Html $wrapperPrototype = null;
 
-    /** @var \Nette\Forms\Controls\BaseControl */
-    protected $control;
+    protected ?BaseControl $control = null;
 
-    /**
-     * @param \Grido\Grid $grid
-     * @param string $name
-     * @param string $label
-     */
-    public function __construct($grid, $name, $label)
+
+    public function __construct(Grid $grid, string $name, string $label)
     {
         $name = Helpers::formatColumnName($name);
         $this->addComponentToGrid($grid, $name);
@@ -73,24 +68,23 @@ abstract class Filter extends \Grido\Components\Component
         $this->type = get_class($this);
 
         $form = $this->getForm();
-        $filters = $form->getComponent(self::ID, FALSE);
-        if ($filters === NULL) {
+        $filters = $form->getComponent(self::ID, false);
+        if ($filters === null) {
             $filters = $form->addContainer(self::ID);
         }
 
         $filters->addComponent($this->getFormControl(), $name);
     }
 
+    
     /**********************************************************************************************/
+
 
     /**
      * Map to database column.
-     * @param string $column
-     * @param string $operator
-     * @return Filter
      * @throws Exception
      */
-    public function setColumn($column, $operator = Condition::OPERATOR_OR)
+    public function setColumn(string $column, string $operator = Condition::OPERATOR_OR): static
     {
         $columnAlreadySet = count($this->column) > 0;
         if (!Condition::isOperator($operator) && $columnAlreadySet) {
@@ -108,61 +102,57 @@ abstract class Filter extends \Grido\Components\Component
         return $this;
     }
 
+
     /**
      * Sets custom condition.
-     * @param $condition
-     * @return Filter
      */
-    public function setCondition($condition)
+    public function setCondition(mixed $condition): static
     {
         $this->condition = $condition;
         return $this;
     }
 
+
     /**
      * Sets custom "sql" where.
      * @param callable $callback function($value, $source) {}
-     * @return Filter
      */
-    public function setWhere($callback)
+    public function setWhere(callable $callback): static
     {
         $this->where = $callback;
         return $this;
     }
 
+
     /**
      * Sets custom format value.
      * @param string $format for example: "%%value%"
-     * @return Filter
      */
-    public function setFormatValue($format)
+    public function setFormatValue(string $format): static
     {
         $this->formatValue = $format;
         return $this;
     }
 
-    /**
-     * Sets default value.
-     * @param string $value
-     * @return Filter
-     */
-    public function setDefaultValue($value)
+
+    public function setDefaultValue(string $value): static
     {
         $this->grid->setDefaultFilter([$this->getName() => $value]);
         return $this;
     }
 
+
     /**********************************************************************************************/
 
+
     /**
-     * @return array
      * @internal
      */
-    public function getColumn()
+    public function getColumn(): array
     {
         if (empty($this->column)) {
             $column = $this->getName();
-            if ($columnComponent = $this->grid->getColumn($column, FALSE)) {
+            if ($columnComponent = $this->grid->getColumn($column, false)) {
                 $column = $columnComponent->column; //use db column from column compoment
             }
 
@@ -172,18 +162,19 @@ abstract class Filter extends \Grido\Components\Component
         return $this->column;
     }
 
+
     /**
-     * @return \Nette\Forms\Controls\BaseControl
      * @internal
      */
-    public function getControl()
+    public function getControl(): BaseControl
     {
-        if ($this->control === NULL) {
+        if ($this->control === null) {
             $this->control = $this->getForm()->getComponent(self::ID)->getComponent($this->getName());
         }
 
         return $this->control;
     }
+
 
     /**
      * @throws Exception
@@ -193,43 +184,40 @@ abstract class Filter extends \Grido\Components\Component
         throw new Exception("Filter {$this->name} cannot be use, because it is not implement getFormControl() method.");
     }
 
+
     /**
      * Returns wrapper prototype (<th> html tag).
-     * @return \Nette\Utils\Html
      */
-    public function getWrapperPrototype()
+    public function getWrapperPrototype(): Html
     {
-        if (!$this->wrapperPrototype) {
-            $this->wrapperPrototype = \Nette\Utils\Html::el('th')
+        if ($this->wrapperPrototype === null) {
+            $this->wrapperPrototype = Html::el('th')
                 ->setClass(['grid-filter-' . $this->getName()]);
         }
 
         return $this->wrapperPrototype;
     }
 
-    /**
-     * @return string
-     */
-    public function getCondition()
+
+    public function getCondition(): mixed
     {
         return $this->condition;
     }
 
+
     /**
-     * @param mixed $value
-     * @return Condition|bool
      * @throws Exception
      * @internal
      */
-    public function __getCondition($value)
+    public function __getCondition(mixed $value): ?Condition
     {
-        if ($value === '' || $value === NULL) {
-            return FALSE; //skip
+        if ($value === '' || $value === null) {
+            return null; //skip
         }
 
         $condition = $this->getCondition();
 
-        if ($this->where !== NULL) {
+        if ($this->where !== null) {
             $condition = Condition::setupFromCallback($this->where, $value);
         } elseif (is_string($condition)) {
             $condition = Condition::setup($this->getColumn(), $condition, $this->formatValue($value));
@@ -243,7 +231,7 @@ abstract class Filter extends \Grido\Components\Component
 
         if (is_array($condition)) { //for user-defined condition by array or callback
             $condition = Condition::setupFromArray($condition);
-        } elseif ($condition !== NULL && !$condition instanceof Condition) {
+        } elseif ($condition !== null && !$condition instanceof Condition) {
             $type = gettype($condition);
             throw new Exception("Condition must be array or Condition object. $type given.");
         }
@@ -251,29 +239,28 @@ abstract class Filter extends \Grido\Components\Component
         return $condition;
     }
 
+
     /**********************************************************************************************/
+
 
     /**
      * Format value for database.
-     * @param string $value
-     * @return string
      */
-    protected function formatValue($value)
+    protected function formatValue(mixed $value): mixed
     {
-        if ($this->formatValue !== NULL) {
-            return str_replace(static::VALUE_IDENTIFIER, $value, $this->formatValue);
+        if ($this->formatValue !== null) {
+            return str_replace(static::VALUE_IDENTIFIER, (is_array($value) ? $value : (string) $value), $this->formatValue);
         } else {
             return $value;
         }
     }
 
+
     /**
      * Value representation in URI.
-     * @param string $value
-     * @return string
      * @internal
      */
-    public function changeValue($value)
+    public function changeValue(mixed $value): mixed
     {
         return $value;
     }

@@ -11,7 +11,7 @@
 
 {php
     $form->getElementPrototype()->class[] = 'ajax grido';
-    $form->getElementPrototype()->{"data-grido-refresh-handler"} = $control->link("refresh!", ['page' => NULL, 'perPage' => NULL, 'sort' => NULL, 'filter' => NULL]);
+    $form->getElementPrototype()->{"data-grido-refresh-handler"} = $control->link("refresh!", ['page' => null, 'perPage' => null, 'sort' => null, 'filter' => null]);
 
     $filterRenderType = $control->getFilterRenderType();
 
@@ -161,11 +161,11 @@
         {foreach $data as $row}
             {php $checkbox = $control->hasOperation()
                     ? $form[\Grido\Components\Operation::ID][\Grido\Helpers::formatColumnName($control->getProperty($row, $control->getComponent(\Grido\Components\Operation::ID)->getPrimaryKey()))]
-                    : NULL;
+                    : null;
                 $tr = $control->getRowPrototype($row);
                 $tr->class[] = $checkbox && $checkbox->getValue()
                     ? 'selected'
-                    : NULL;
+                    : null;
             }
             {$tr->startTag()|noescape}
                 <td n:if="$checkbox" class="checker">

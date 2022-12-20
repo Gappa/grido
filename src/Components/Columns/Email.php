@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -11,6 +13,8 @@
 
 namespace Grido\Components\Columns;
 
+use Nette\Utils\Html;
+
 /**
  * Email column.
  *
@@ -20,20 +24,14 @@ namespace Grido\Components\Columns;
  */
 class Email extends Link
 {
-    /**
-     * @param string $value
-     * @return string
-     */
-    protected function formatHref($value)
+
+    protected function formatHref(string $value): string
     {
         return "mailto:" . $value;
     }
 
-    /**
-     * @param mixed $value
-     * @return \Nette\Utils\Html
-     */
-    protected function getAnchor($value)
+
+    protected function getAnchor(mixed $value): Html
     {
         $anchor = parent::getAnchor($value);
         unset($anchor->attrs['target']);

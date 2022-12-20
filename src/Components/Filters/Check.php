@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -11,6 +13,8 @@
 
 namespace Grido\Components\Filters;
 
+use Nette\Forms\Controls\Checkbox;
+
 /**
  * Check box filter.
  *
@@ -20,55 +24,49 @@ namespace Grido\Components\Filters;
  */
 class Check extends Filter
 {
-    /* representation TRUE in URI */
-    const TRUE = '✓';
+    /* representation true in URI */
+    const true = '✓';
 
-    /** @var string */
-    protected $condition = 'IS NOT NULL';
+    protected mixed $condition = 'IS NOT null';
 
-    /**
-     * @return \Nette\Forms\Controls\Checkbox
-     */
-    protected function getFormControl()
+
+    protected function getFormControl(): Checkbox
     {
-        $control = new \Nette\Forms\Controls\Checkbox($this->label);
+        $control = new Checkbox($this->label);
         $control->getControlPrototype()->class[] = 'checkbox';
         return $control;
     }
 
+
     /**
-     * @param string $value
-     * @return Condition|bool
      * @internal
      */
-    public function __getCondition($value)
+    public function __getCondition(mixed $value): ?Condition
     {
-        $value = $value == self::TRUE
-            ? TRUE
-            : FALSE;
+        $value = $value == self::true
+            ? true
+            : false;
 
         return parent::__getCondition($value);
     }
 
-    /**
-     * @param bool $value
-     * @return NULL
-     * @internal
-     */
-    public function formatValue($value)
-    {
-        return NULL;
-    }
 
     /**
-     * @param bool $value
-     * @return string
      * @internal
      */
-    public function changeValue($value)
+    public function formatValue(mixed $value): mixed
     {
-        return (bool) $value === TRUE
-            ? self::TRUE
+        return null;
+    }
+
+
+    /**
+     * @internal
+     */
+    public function changeValue(mixed $value): mixed
+    {
+        return (bool) $value === true
+            ? self::true
             : $value;
     }
 }

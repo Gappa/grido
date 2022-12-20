@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -14,6 +16,7 @@ namespace Grido\DataSources;
 use Grido\Components\Filters\Condition;
 use Grido\Exception;
 use Nette;
+use Nette\Database\Table\Selection;
 
 /**
  * Nette Database data source.
@@ -22,7 +25,7 @@ use Nette;
  * @subpackage  DataSources
  * @author      Petr Bugyík
  *
- * @property-read \Nette\Database\Table\Selection $selection
+ * @property-read Selection $selection
  * @property-read int $count
  * @property-read array $data
  */
@@ -30,35 +33,25 @@ class NetteDatabase implements IDataSource
 {
 
 	use Nette\SmartObject;
-	/** @var \Nette\Database\Table\Selection */
-	protected $selection;
+
+	protected Selection $selection;
 
 
-	/**
-	 * @param \Nette\Database\Table\Selection $selection
-	 */
-	public function __construct(\Nette\Database\Table\Selection $selection)
+	public function __construct(Selection $selection)
 	{
 		$this->selection = $selection;
 	}
 
 
-	/**
-	 * @return \Nette\Database\Table\Selection
-	 */
-	public function getSelection()
+	public function getSelection(): Selection
 	{
 		return $this->selection;
 	}
 
 
-	/**
-	 * @param Condition $condition
-	 * @param \Nette\Database\Table\Selection $selection
-	 */
-	protected function makeWhere(Condition $condition, \Nette\Database\Table\Selection $selection = NULL): void
+	protected function makeWhere(Condition $condition, Selection $selection = null): void
 	{
-		$selection = $selection === NULL ? $this->selection : $selection;
+		$selection = $selection === null ? $this->selection : $selection;
 
 		if ($condition->callback) {
 			call_user_func_array($condition->callback, [$condition->value, $selection]);
@@ -72,12 +65,8 @@ class NetteDatabase implements IDataSource
 
 	/**
 	 * Default callback for an inline editation save.
-	 * @param mixed $id
-	 * @param array $values
-	 * @param string $idCol
-	 * @return bool
 	 */
-	public function update($id, array $values, $idCol)
+	public function update(mixed $id, array $values, string $idCol): bool
 	{
 		return (bool) $this->getSelection()
 			->where('?name = ?', $idCol, $id)
@@ -87,11 +76,8 @@ class NetteDatabase implements IDataSource
 
 	/**
 	 * Default callback used when an editable column has customRender.
-	 * @param mixed $id
-	 * @param string $idCol
-	 * @return \Nette\Database\Table\ActiveRow|bool
 	 */
-	public function getRow($id, $idCol)
+	public function getRow(mixed $id, string $idCol): \Nette\Database\Table\ActiveRow|bool
 	{
 		return $this->getSelection()
 			->where('?name = ?', $idCol, $id)
@@ -136,13 +122,9 @@ class NetteDatabase implements IDataSource
 
 
 	/**
-	 * @param mixed $column
-	 * @param array $conditions
-	 * @param int $limit
-	 * @return array
 	 * @throws Exception
 	 */
-	public function suggest($column, array $conditions, int $limit): array
+	public function suggest(mixed $column, array $conditions, int $limit): array
 	{
 		$selection = clone $this->selection;
 		is_string($column) && $selection->select("DISTINCT $column")->order($column);

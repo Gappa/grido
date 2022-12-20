@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -34,41 +36,33 @@ class Condition
     const OPERATOR_OR = 'OR';
     const OPERATOR_AND = 'AND';
 
-    /** @var array */
-    protected $column;
+    protected array $column;
 
-    /** @var array */
-    protected $condition;
+    protected array $condition;
 
-    /** @var mixed */
-    protected $value;
+    protected mixed $value;
 
-    /** @var callable */
-    protected $callback;
+    /** @var ?callable */
+    protected $callback = null;
 
-    /**
-     * @param mixed $column
-     * @param mixed $condition
-     * @param mixed $value
-     */
-    public function __construct($column, $condition, $value = NULL)
+
+    public function __construct(mixed $column, mixed $condition, mixed $value = null)
     {
         $this->setColumn($column);
         $this->setCondition($condition);
         $this->setValue($value);
     }
 
+
     /**
-     * @param mixed $column
      * @throws Exception
-     * @return Condition
      */
-    public function setColumn($column)
+    public function setColumn(mixed $column): static
     {
         if (is_array($column)) {
             $count = count($column);
 
-            //check validity
+            // check validity
             if ($count % 2 === 0) {
                 throw new Exception('Count of column must be odd.');
             }
@@ -88,56 +82,43 @@ class Condition
         return $this;
     }
 
-    /**
-     * @param mixed $condition
-     * @return Condition
-     */
-    public function setCondition($condition)
+
+    public function setCondition(mixed $condition): static
     {
         $this->condition = (array) $condition;
         return $this;
     }
 
-    /**
-     * @param mixed $value
-     * @return Condition
-     */
-    public function setValue($value)
+
+    public function setValue(mixed $value): static
     {
         $this->value = (array) $value;
         return $this;
     }
 
+
     /**********************************************************************************************/
 
-    /**
-     * @return array
-     */
-    public function getColumn()
+
+    public function getColumn(): array
     {
         return $this->column;
     }
 
-    /**
-     * @return array
-     */
-    public function getCondition()
+
+    public function getCondition(): array
     {
         return $this->condition;
     }
 
-    /**
-     * @return array
-     */
-    public function getValue()
+
+    public function getValue(): array
     {
         return $this->value;
     }
 
-    /**
-     * @return array
-     */
-    public function getValueForColumn()
+
+    public function getValueForColumn(): array
     {
         if (count($this->condition) > 1) {
             return $this->value;
@@ -155,10 +136,8 @@ class Condition
         return $values;
     }
 
-    /**
-     * @return array
-     */
-    public function getColumnWithoutOperator()
+
+    public function getColumnWithoutOperator(): array
     {
         $columns = [];
         foreach ($this->column as $column) {
@@ -170,51 +149,41 @@ class Condition
         return $columns;
     }
 
-    /**
-     * @return callable
-     */
-    public function getCallback()
+
+    public function getCallback(): ?callable
     {
         return $this->callback;
     }
 
+
     /**********************************************************************************************/
 
+
     /**
-     * Returns TRUE if $item is Condition:OPERATOR_AND or Condition:OPERATOR_OR else FALSE.
-     * @param string $item
-     * @return bool
+     * Returns true if $item is Condition:OPERATOR_AND or Condition:OPERATOR_OR else false.
      */
-    public static function isOperator($item)
+    public static function isOperator(string $item): bool
     {
         return in_array(strtoupper($item), [self::OPERATOR_AND, self::OPERATOR_OR]);
     }
 
-    /**
-     * @param mixed $column
-     * @param string $condition
-     * @param mixed $value
-     * @return Condition
-     */
-    public static function setup($column, $condition, $value)
+
+    public static function setup(mixed $column, mixed $condition, mixed $value): static
     {
         return new self($column, $condition, $value);
     }
 
-    /**
-     * @return Condition
-     */
-    public static function setupEmpty()
+
+    public static function setupEmpty(): static
     {
-        return new self(NULL, '0 = 1');
+        return new self(null, '0 = 1');
     }
 
+
     /**
-     * @param array $condition
      * @throws Exception
-     * @return Condition
      */
-    public static function setupFromArray(array $condition)
+    public static function setupFromArray(array $condition): static
     {
         if (count($condition) !== 3) {
             throw new Exception("Condition array must contain 3 items.");
@@ -223,31 +192,31 @@ class Condition
         return new self($condition[0], $condition[1], $condition[2]);
     }
 
-    /**
-     * @param callable $callback
-     * @param mixed $value
-     * @return Condition
-     */
-    public static function setupFromCallback($callback, $value)
+
+    public static function setupFromCallback(callable $callback, mixed $value): static
     {
-        $self = new self(NULL, NULL);
+        $self = new self(null, null);
         $self->value = $value;
         $self->callback = $callback;
 
         return $self;
     }
 
+
     /**********************************************************************************************/
+
 
     /**
      * @param string $prefix - column prefix
      * @param string $suffix - column suffix
      * @param bool $brackets - add brackets when multiple where
      * @throws Exception
-     * @return array
      */
-    public function __toArray($prefix = NULL, $suffix = NULL, $brackets = TRUE)
-    {
+    public function __toArray(
+        ?string $prefix = null,
+        ?string $suffix = null,
+        bool $brackets = true
+    ): array {
         $condition = [];
         $addBrackets = $brackets && count($this->column) > 1;
 

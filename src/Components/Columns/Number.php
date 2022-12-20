@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -10,6 +12,8 @@
  */
 
 namespace Grido\Components\Columns;
+
+use Grido\Grid;
 
 /**
  * Number column.
@@ -22,8 +26,7 @@ namespace Grido\Components\Columns;
  */
 class Number extends Editable
 {
-    /** @var array */
-    protected $numberFormat = [
+    protected array $numberFormat = [
         self::NUMBER_FORMAT_DECIMALS => 0,
         self::NUMBER_FORMAT_DECIMAL_POINT => '.',
         self::NUMBER_FORMAT_THOUSANDS_SEPARATOR => ','
@@ -35,57 +38,53 @@ class Number extends Editable
     const NUMBER_FORMAT_THOUSANDS_SEPARATOR = 2;
 
     /**
-     * @param \Grido\Grid $grid
-     * @param string $name
-     * @param string $label
-     * @param int $decimals number of decimal points
-     * @param string $decPoint separator for the decimal point
-     * @param string $thousandsSep thousands separator
+     * @param ?int $decimals number of decimal points
+     * @param ?string $decPoint separator for the decimal point
+     * @param ?string $thousandsSep thousands separator
      */
-    public function __construct($grid, $name, $label, $decimals = NULL, $decPoint = NULL, $thousandsSep = NULL)
-    {
+    public function __construct(
+        Grid $grid,
+        string $name,
+        string $label,
+        int $decimals = 0,
+        ?string $decPoint = null,
+        ?string $thousandsSep = null
+    ) {
         parent::__construct($grid, $name, $label);
 
         $this->setNumberFormat($decimals, $decPoint, $thousandsSep);
     }
 
+
     /**
      * Sets number format. Params are same as internal function number_format().
      * @param int $decimals number of decimal points
-     * @param string $decPoint separator for the decimal point
-     * @param string $thousandsSep thousands separator
-     * @return Number
+     * @param ?string $decPoint separator for the decimal point
+     * @param ?string $thousandsSep thousands separator
      */
-    public function setNumberFormat($decimals = NULL, $decPoint = NULL, $thousandsSep = NULL)
+    public function setNumberFormat(int $decimals = 0, ?string $decPoint = null, ?string $thousandsSep = null): static
     {
-        if ($decimals !== NULL) {
-            $this->numberFormat[self::NUMBER_FORMAT_DECIMALS] = (int) $decimals;
-        }
+        $this->numberFormat[self::NUMBER_FORMAT_DECIMALS] = $decimals;
 
-        if ($decPoint !== NULL) {
+        if ($decPoint !== null) {
             $this->numberFormat[self::NUMBER_FORMAT_DECIMAL_POINT] = $decPoint;
         }
 
-        if ($thousandsSep !== NULL) {
+        if ($thousandsSep !== null) {
             $this->numberFormat[self::NUMBER_FORMAT_THOUSANDS_SEPARATOR] = $thousandsSep;
         }
 
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    public function getNumberFormat()
+
+    public function getNumberFormat(): array
     {
         return $this->numberFormat;
     }
 
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    protected function formatValue($value)
+
+    protected function formatValue(mixed $value): mixed
     {
         $value = parent::formatValue($value);
 
@@ -94,7 +93,7 @@ class Number extends Editable
         $thousandsSep = $this->numberFormat[self::NUMBER_FORMAT_THOUSANDS_SEPARATOR];
 
         return is_numeric($value)
-            ? number_format($value, $decimals, $decPoint, $thousandsSep)
+            ? number_format((float) $value, $decimals, $decPoint, $thousandsSep)
             : $value;
     }
 }

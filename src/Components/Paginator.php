@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -32,26 +34,19 @@ class Paginator extends \Nette\Utils\Paginator
 	const DEFAULT_STEP_RANGE = 3;
 
 
-	/** @var int */
-	protected $page;
+	protected ?int $page = null;
 
-	/** @var array */
-	protected $steps = [];
+	protected array $steps = [];
 
-	/** @var int */
-	protected $countBegin;
+	protected ?int $countBegin = null;
 
-	/** @var int */
-	protected $countEnd;
+	protected ?int $countEnd = null;
 
-	/** @var Grid */
-	protected $grid;
+	protected Grid $grid;
 
-	/** @var int */
-	private $stepCount = self::DEFAULT_STEP_COUNT;
+	private int $stepCount = self::DEFAULT_STEP_COUNT;
 
-	/** @var int */
-	private $stepRange = self::DEFAULT_STEP_RANGE;
+	private int $stepRange = self::DEFAULT_STEP_RANGE;
 
 
 	public function setGrid(Grid $grid): Paginator
@@ -70,7 +65,7 @@ class Paginator extends \Nette\Utils\Paginator
 
 	public function setStepCount(int $stepCount): Paginator
 	{
-		$this->stepCount = (int) $stepCount;
+		$this->stepCount = $stepCount;
 		return $this;
 	}
 

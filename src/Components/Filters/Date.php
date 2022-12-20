@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -10,6 +12,8 @@
  */
 
 namespace Grido\Components\Filters;
+
+use Nette\Forms\Controls\TextInput;
 
 /**
  * Date input filter.
@@ -23,59 +27,40 @@ namespace Grido\Components\Filters;
  */
 class Date extends Text
 {
-    /** @var string */
-    protected $formatValue;
+    // protected ?string $formatValue;
 
-    /** @var string */
-    protected $dateFormatInput = 'd.m.Y';
+    protected string $dateFormatInput = 'd.m.Y';
 
-    /** @var string */
-    protected $dateFormatOutput = 'Y-m-d%';
+    protected string $dateFormatOutput = 'Y-m-d%';
 
-    /**
-     * Sets date-input format.
-     * @param string $format
-     * @return Date
-     */
-    public function setDateFormatInput($format)
+
+    public function setDateFormatInput(string $format): static
     {
         $this->dateFormatInput = $format;
         return $this;
     }
 
-    /**
-     * Returns date-input format.
-     * @return string
-     */
-    public function getDateFormatInput()
+
+    public function getDateFormatInput(): string
     {
         return $this->dateFormatInput;
     }
 
-    /**
-     * Sets date-output format.
-     * @param string $format
-     * @return Date
-     */
-    public function setDateFormatOutput($format)
+
+    public function setDateFormatOutput(string $format): static
     {
         $this->dateFormatOutput = $format;
         return $this;
     }
 
-    /**
-     * Returns date-output format.
-     * @return string
-     */
-    public function getDateFormatOutput()
+
+    public function getDateFormatOutput(): string
     {
         return $this->dateFormatOutput;
     }
 
-    /**
-     * @return \Nette\Forms\Controls\TextInput
-     */
-    protected function getFormControl()
+
+    protected function getFormControl(): TextInput
     {
         $control = parent::getFormControl();
         $control->getControlPrototype()->class[] = 'date';
@@ -84,20 +69,19 @@ class Date extends Text
         return $control;
     }
 
+
     /**
-     * @param string $value
-     * @return Condition|bool
      * @throws \Exception
      * @internal
      */
-    public function __getCondition($value)
+    public function __getCondition(mixed $value): ?Condition
     {
-        if ($value === '' || $value === NULL) {
-            return FALSE; //skip
+        if ($value === '' || $value === null) {
+            return null; //skip
         }
 
         $condition = $this->condition;
-        if ($this->where === NULL && is_string($condition)) {
+        if ($this->where === null && is_string($condition)) {
             $column = $this->getColumn();
             return ($date = \DateTime::createFromFormat($this->dateFormatInput, $value))
                 ? Condition::setupFromArray([$column, $condition, $date->format($this->dateFormatOutput)])

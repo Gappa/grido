@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -11,6 +13,8 @@
 
 namespace Grido\DataSources;
 
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Query;
 use Grido\Exception;
 use Grido\Components\Filters\Condition;
 use Nette\Utils\Strings;
@@ -26,7 +30,7 @@ use Nette;
  * @author      Martin Jantosovic <martin.jantosovic@freya.sk>
  * @author      Petr Bugyík
  *
- * @property-read \Doctrine\ORM\QueryBuilder $qb
+ * @property-read QueryBuilder $qb
  * @property-read array $filterMapping
  * @property-read array $sortMapping
  * @property-read int $count
@@ -36,33 +40,33 @@ class Doctrine implements IDataSource
 {
 
 	use Nette\SmartObject;
-	/** @var \Doctrine\ORM\QueryBuilder */
+
+	// QueryBuilder
 	protected $qb;
 
-	/** @var array Map column to the query builder */
-	protected $filterMapping;
+	// Map column to the query builder
+	protected array $filterMapping;
 
-	/** @var array Map column to the query builder */
-	protected $sortMapping;
+	// Map column to the query builder
+	protected array $sortMapping;
 
-	/** @var bool use OutputWalker in Doctrine Paginator */
-	protected $useOutputWalkers;
+	// use OutputWalker in Doctrine Paginator
+	protected bool $useOutputWalkers;
 
-	/** @var bool fetch join collection in Doctrine Paginator */
-	protected $fetchJoinCollection = true;
+	// fetch join collection in Doctrine Paginator
+	protected bool $fetchJoinCollection = true;
 
-	/** @var array */
-	protected $rand;
+	protected array $rand;
 
 
 	/**
 	 * If $sortMapping is not set and $filterMapping is set,
 	 * $filterMapping will be used also as $sortMapping.
-	 * @param \Doctrine\ORM\QueryBuilder $qb
+	 * @param QueryBuilder $qb
 	 * @param array $filterMapping Maps columns to the DQL columns
 	 * @param array $sortMapping Maps columns to the DQL columns
 	 */
-	public function __construct(\Doctrine\ORM\QueryBuilder $qb, array $filterMapping = null, array $sortMapping = null)
+	public function __construct(QueryBuilder $qb, array $filterMapping = null, array $sortMapping = null)
 	{
 		$this->qb = $qb;
 		$this->filterMapping = $filterMapping;
@@ -74,27 +78,27 @@ class Doctrine implements IDataSource
 	}
 
 
-	public function setUseOutputWalkers(bool $useOutputWalkers): \Grido\DataSources\Doctrine
+	public function setUseOutputWalkers(bool $useOutputWalkers): Doctrine
 	{
 		$this->useOutputWalkers = $useOutputWalkers;
 		return $this;
 	}
 
 
-	public function setFetchJoinCollection(bool $fetchJoinCollection): \Grido\DataSources\Doctrine
+	public function setFetchJoinCollection(bool $fetchJoinCollection): Doctrine
 	{
 		$this->fetchJoinCollection = $fetchJoinCollection;
 		return $this;
 	}
 
 
-	public function getQuery(): \Doctrine\ORM\Query
+	public function getQuery(): Query
 	{
 		return $this->qb->getQuery();
 	}
 
 
-	public function getQb(): \Doctrine\ORM\QueryBuilder
+	public function getQb(): QueryBuilder
 	{
 		return $this->qb;
 	}
@@ -112,7 +116,7 @@ class Doctrine implements IDataSource
 	}
 
 
-	protected function makeWhere(Condition $condition, \Doctrine\ORM\QueryBuilder $qb = null)
+	protected function makeWhere(Condition $condition, QueryBuilder $qb = null)//: void
 	{
 		$qb = $qb === null ? $this->qb : $qb;
 
@@ -171,7 +175,6 @@ class Doctrine implements IDataSource
 	 * It is possible to use query builder with additional columns.
 	 * In this case, only item at index [0] is returned, because
 	 * it should be an entity object.
-	 * @return array
 	 */
 	public function getData(): array
 	{
@@ -215,13 +218,9 @@ class Doctrine implements IDataSource
 
 
 	/**
-	 * @param mixed $column
-	 * @param array $conditions
-	 * @param int $limit
-	 * @return array
 	 * @throws Exception
 	 */
-	public function suggest($column, array $conditions, int $limit): array
+	public function suggest(mixed $column, array $conditions, int $limit): array
 	{
 		$qb = clone $this->qb;
 		$qb->setMaxResults($limit);

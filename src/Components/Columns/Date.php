@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -10,6 +12,8 @@
  */
 
 namespace Grido\Components\Columns;
+
+use Grido\Grid;
 
 /**
  * Date column.
@@ -26,49 +30,32 @@ class Date extends Editable
     const FORMAT_DATE = 'd.m.Y';
     const FORMAT_DATETIME = 'd.m.Y H:i:s';
 
-    /** @var string */
-    protected $dateFormat = self::FORMAT_DATE;
+    protected string $dateFormat = self::FORMAT_DATE;
 
-    /**
-     * @param \Grido\Grid $grid
-     * @param string $name
-     * @param string $label
-     * @param string $dateFormat
-     */
-    public function __construct($grid, $name, $label, $dateFormat = NULL)
+
+    public function __construct(Grid $grid, string $name, string $label, string $dateFormat = self::FORMAT_DATE)
     {
         parent::__construct($grid, $name, $label);
-
-        if ($dateFormat !== NULL) {
-            $this->dateFormat = $dateFormat;
-        }
+        $this->dateFormat = $dateFormat;
     }
 
-    /**
-     * @param string $format
-     * @return Date
-     */
-    public function setDateFormat($format)
+
+    public function setDateFormat(string $format): static
     {
         $this->dateFormat = $format;
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getDateFormat()
+
+    public function getDateFormat(): string
     {
         return $this->dateFormat;
     }
 
-    /**
-     * @param mixed $value
-     * @return mixed
-     */
-    protected function formatValue($value)
+
+    protected function formatValue(mixed $value): mixed
     {
-        if ($value === NULL || is_bool($value)) {
+        if ($value === null || is_bool($value)) {
             return $this->applyReplacement($value);
         } elseif (is_scalar($value)) {
             $value = \Latte\Runtime\Filters::escapeHtml($value);
@@ -78,17 +65,16 @@ class Date extends Editable
             }
         }
 
-        return $value instanceof \DateTime
+        return $value instanceof \DateTimeInterface
             ? $value->format($this->dateFormat)
-            : date($this->dateFormat, is_numeric($value) ? $value : strtotime($value)); //@todo notice for "01.01.1970"
+            : date($this->dateFormat, is_numeric($value) ? $value : strtotime((string) $value)); //@todo notice for "01.01.1970"
     }
 
+
     /**
-     * @param mixed $row
-     * @return string
      * @internal
      */
-    public function renderExport($row)
+    public function renderExport(mixed $row): mixed
     {
         if (is_callable($this->customRenderExport)) {
             return call_user_func_array($this->customRenderExport, [$row]);

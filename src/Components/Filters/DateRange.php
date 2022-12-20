@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -11,6 +13,7 @@
 
 namespace Grido\Components\Filters;
 
+use Nette\Forms\Controls\TextInput;
 use Nette\Utils\Strings;
 
 /**
@@ -24,23 +27,16 @@ use Nette\Utils\Strings;
  */
 class DateRange extends Date
 {
-    /** @var string */
-    protected $condition = 'BETWEEN ? AND ?';
+    protected mixed $condition = 'BETWEEN ? AND ?';
 
-    /** @var string */
-    protected $mask = '/(.*)\s?-\s?(.*)/';
+    protected string $mask = '/(.*)\s?-\s?(.*)/';
 
-    /** @var array */
-    protected $dateFormatOutput = ['Y-m-d', 'Y-m-d G:i:s'];
+    protected array $dateFormatOutput = ['Y-m-d', 'Y-m-d G:i:s'];
 
-    /**
-     * @param string $formatFrom
-     * @param string $formatTo
-     * @return \Grido\Components\Filters\DateRange
-     */
-    public function setDateFormatOutput($formatFrom, $formatTo = NULL)
+
+    public function setDateFormatOutput(string $formatFrom, ?string $formatTo = null): self
     {
-        $formatTo = $formatTo === NULL
+        $formatTo = $formatTo === null
             ? $formatFrom
             : $formatTo;
 
@@ -48,29 +44,24 @@ class DateRange extends Date
         return $this;
     }
 
+
     /**
      * Sets mask by regular expression.
-     * @param string $mask
-     * @return DateRange
      */
-    public function setMask($mask)
+    public function setMask(string $mask): self
     {
         $this->mask = $mask;
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getMask()
+
+    public function getMask(): string
     {
         return $this->mask;
     }
 
-    /**
-     * @return \Nette\Forms\Controls\TextInput
-     */
-    protected function getFormControl()
+
+    protected function getFormControl(): TextInput
     {
         $control = parent::getFormControl();
 
@@ -81,19 +72,18 @@ class DateRange extends Date
         return $control;
     }
 
+
     /**
-     * @param string $value
-     * @return Condition|bool
      * @throws \Exception
      * @internal
      */
-    public function __getCondition($value)
+    public function __getCondition(mixed $value): ?Condition
     {
-        if ($value === '' || $value === NULL) {
-            return FALSE; //skip
+        if ($value === '' || $value === null) {
+            return null; //skip
         }
 
-        if ($this->where === NULL && is_string($this->condition)) {
+        if ($this->where === null && is_string($this->condition)) {
 
             list(, $from, $to) = \Nette\Utils\Strings::match($value, $this->mask);
             $from = \DateTime::createFromFormat($this->dateFormatInput, trim((string) $from));
@@ -107,7 +97,7 @@ class DateRange extends Date
 
             $values = $from && $to
                 ? [$from->format($this->dateFormatOutput[0]), $to->format($this->dateFormatOutput[1])]
-                : NULL;
+                : null;
 
             return $values
                 ? Condition::setup($this->getColumn(), $this->condition, $values)

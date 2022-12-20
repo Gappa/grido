@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -31,11 +33,5 @@ interface IDataSource
 
 	public function sort(array $sorting): void;
 
-	/**
-	 * @param mixed $column
-	 * @param array $conditions
-	 * @param int $limit
-	 * @return array
-	 */
-	public function suggest($column, array $conditions, int $limit): array;
+	public function suggest(mixed $column, array $conditions, int $limit): array;
 }

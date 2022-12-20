@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Grido\Components\Exports;
 
 use Grido\Components\Columns\Column;
@@ -15,13 +17,13 @@ class CsvExport extends BaseExport
 	const DELIMITER = "\t"; // tabulator (in UTF-16LE only) enables MS Excel to automatically format data into columns (comma nor ; does not) https://gitlab.com/Ciki/uiad/-/issues/575
 
 
-	/** @var string */
-	private $delimiter;
+	private string $delimiter;
 
 
-	public function __construct(string $label = null, string $filename = null, array $options = [])
+	public function __construct(string $label = null, ?string $filename = null, array $options = [])
 	{
 		$options['encoding'] ??= self::ENCODING_UTF16LE;
+		$label ??= $filename;
 		parent::__construct($label, $filename, $options);
 		$this->delimiter = $options['delimiter'] ?? self::DELIMITER;
 	}

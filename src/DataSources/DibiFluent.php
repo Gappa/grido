@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -11,6 +13,8 @@
 
 namespace Grido\DataSources;
 
+use Dibi\Fluent;
+use Dibi\Row;
 use Grido\Components\Filters\Condition;
 use Grido\Exception;
 use Nette;
@@ -22,7 +26,7 @@ use Nette;
  * @subpackage  DataSources
  * @author      Petr Bugyík
  *
- * @property-read \Dibi\Fluent $fluent
+ * @property-read Fluent $fluent
  * @property-read int $limit
  * @property-read int $offset
  * @property-read int $count
@@ -32,23 +36,21 @@ class DibiFluent implements IDataSource
 {
 
 	use Nette\SmartObject;
-	/** @var \Dibi\Fluent */
-	protected $fluent;
 
-	/** @var int */
-	protected $limit;
+	protected Fluent $fluent;
 
-	/** @var int */
-	protected $offset;
+	protected int $limit;
+
+	protected int $offset;
 
 
-	public function __construct(\Dibi\Fluent $fluent)
+	public function __construct(Fluent $fluent)
 	{
 		$this->fluent = $fluent;
 	}
 
 
-	public function getFluent(): \Dibi\Fluent
+	public function getFluent(): Fluent
 	{
 		return $this->fluent;
 	}
@@ -66,7 +68,7 @@ class DibiFluent implements IDataSource
 	}
 
 
-	protected function makeWhere(Condition $condition, \Dibi\Fluent $fluent = null)
+	protected function makeWhere(Condition $condition, Fluent $fluent = null): void
 	{
 		$fluent = $fluent === null ? $this->fluent : $fluent;
 
@@ -82,11 +84,8 @@ class DibiFluent implements IDataSource
 
 	/**
 	 * Default callback used when an editable column has customRender.
-	 * @param mixed $id
-	 * @param string $idCol
-	 * @return \Dibi\Row
 	 */
-	public function getRow($id, string $idCol): \Dibi\Row
+	public function getRow(mixed $id, string $idCol): Row
 	{
 		$fluent = clone $this->fluent;
 		return $fluent
@@ -134,13 +133,9 @@ class DibiFluent implements IDataSource
 
 
 	/**
-	 * @param mixed $column
-	 * @param array $conditions
-	 * @param int $limit
-	 * @return array
 	 * @throws Exception
 	 */
-	public function suggest($column, array $conditions, int $limit): array
+	public function suggest(mixed $column, array $conditions, int $limit): array
 	{
 		$fluent = clone $this->fluent;
 		if (is_string($column)) {

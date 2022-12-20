@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Grido\Components\Exports;
 
 use Grido\Components\Component;
 use Grido\Grid;
-use Nette\Application\IResponse;
+use Nette\Application\Response;
+use Nette\ComponentModel\IComponent;
+use Nette\Http\IRequest;
+use Nette\Http\IResponse;
 use Nette\Utils\Strings;
 use OutOfRangeException;
 
@@ -18,7 +23,7 @@ use OutOfRangeException;
  * @property-write array $header
  * @property-write callable $customData
  */
-abstract class BaseExport extends Component implements IResponse
+abstract class BaseExport extends Component implements Response
 {
 	const ID = 'export';
 
@@ -27,29 +32,23 @@ abstract class BaseExport extends Component implements IResponse
 	const ENCODING_UTF16LE = 'UTF-16LE';
 
 
-	/** @var int */
-	protected $fetchLimit = 10000;
+	protected int $fetchLimit = 10000;
 
-	/** @var array */
-	protected $header = [];
+	protected array $header = [];
 
 	/** @var callable */
 	protected $customData;
 
-	/** @var ?string */
-	private $title;
+	private ?string $title = null;
 
-	/** @var ?string */
-	private $filename;
+	private ?string $filename = null;
 
-	/** @var array */
-	protected $options;
+	protected array $options;
 
-	/** @var string */
-	protected $encoding;
+	protected string $encoding;
 
 
-	public function __construct(string $label = null, string $filename = null, array $options = [])
+	public function __construct(string $label, ?string $filename = null, array $options = [])
 	{
 		$allowedEncoding = [
 			self::ENCODING_UTF8,
@@ -68,7 +67,7 @@ abstract class BaseExport extends Component implements IResponse
 	}
 
 
-	protected function attached(\Nette\ComponentModel\IComponent $presenter): void
+	protected function attached(IComponent $presenter): void
 	{
 		parent::attached($presenter);
 		if ($presenter instanceof Grid) {
@@ -79,9 +78,9 @@ abstract class BaseExport extends Component implements IResponse
 
 	abstract protected function printData(): void;
 
-	abstract protected function setHttpHeaders(\Nette\Http\IResponse $httpResponse, string $label): void;
+	abstract protected function setHttpHeaders(IResponse $httpResponse, string $label): void;
 
-	public function setTitle(string $title): self
+	public function setTitle(string $title): static
 	{
 		$this->title = $title;
 		return $this;
@@ -97,9 +96,9 @@ abstract class BaseExport extends Component implements IResponse
 	/**
 	 * Sets a limit which will be used in order to retrieve data from datasource.
 	 */
-	public function setFetchLimit(int $limit): self
+	public function setFetchLimit(int $limit): static
 	{
-		$this->fetchLimit = (int) $limit;
+		$this->fetchLimit = $limit;
 		return $this;
 	}
 
@@ -113,7 +112,7 @@ abstract class BaseExport extends Component implements IResponse
 	/**
 	 * Sets a custom header of result CSV file (list of field names).
 	 */
-	public function setHeader(array $header): self
+	public function setHeader(array $header): static
 	{
 		$this->header = $header;
 		return $this;
@@ -124,7 +123,7 @@ abstract class BaseExport extends Component implements IResponse
 	 * Sets a callback to modify output data. This callback must return a list of items. (array) function($datasource)
 	 * DEBUG? You probably need to comment lines started with $httpResponse->setHeader in Grido\Components\Export.php
 	 */
-	public function setCustomData(callable $callback): self
+	public function setCustomData(callable $callback): static
 	{
 		$this->customData = $callback;
 		return $this;
@@ -151,9 +150,9 @@ abstract class BaseExport extends Component implements IResponse
 	}
 
 
-	/*	 * ************************* interface \Nette\Application\IResponse ************************** */
+	/*	 * ************************* interface Response ************************** */
 
-	public function send(\Nette\Http\IRequest $httpRequest, \Nette\Http\IResponse $httpResponse): void
+	public function send(IRequest $httpRequest, IResponse $httpResponse): void
 	{
 		set_time_limit(0);
 		$label = $this->label ? ucfirst(Strings::webalize($this->label)) : ucfirst($this->grid->name);

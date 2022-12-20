@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -11,6 +13,10 @@
 
 namespace Grido\Components\Filters;
 
+use Ciki\Forms\Controls\MultiSelectBox;
+use Ciki\Forms\Controls\SelectBox;
+use Grido\Grid;
+
 /**
  * Select box filter.
  *
@@ -20,31 +26,25 @@ namespace Grido\Components\Filters;
  */
 class Select extends Filter
 {
-    /** @var bool */
-    private $multiple = false;
+    private bool $multiple = false;
+
 
     /**
-     * @param \Grido\Grid $grid
-     * @param string $name
-     * @param string $label
      * @param array $items for select
-     * @param bool $multiple
      */
-    public function __construct($grid, $name, $label, array $items = NULL, /*bool */ $multiple = false)
+    public function __construct(Grid $grid, string $name, string $label, array $items = null, bool $multiple = false)
     {
         $this->multiple = $multiple;
         parent::__construct($grid, $name, $label);
 
-        if ($items !== NULL) {
+        if ($items !== null) {
             $this->getControl()->setItems($items);
         }
     }
 
-    /**
-     * @return \Ciki\Forms\Controls\SelectBox
-     */
-    protected function getFormControl()
+
+    protected function getFormControl(): SelectBox|MultiSelectBox
     {
-        return $this->multiple ? new \Ciki\Forms\Controls\MultiSelectBox($this->label) : new \Ciki\Forms\Controls\SelectBox($this->label);
+        return $this->multiple ? new MultiSelectBox($this->label) : new SelectBox($this->label);
     }
 }

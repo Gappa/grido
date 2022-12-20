@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -23,7 +25,7 @@ use Nette\Utils\Html;
  *
  * @property-read Html $element
  * @property-write Html $elementPrototype
- * @property string $options
+ * @property array $options
  * @property-read string $destination
  * @property-read array $arguments
  */
@@ -32,28 +34,29 @@ class Button extends Component
 	const ID = 'buttons';
 
 
-	/** @var string first param for method $presenter->link() */
-	protected $destination;
+	// first param for method $presenter->link()
+	protected string $destination;
 
-	/** @var array second param for method $presenter->link() */
-	protected $arguments = [];
+	// second param for method $presenter->link()
+	protected array $arguments = [];
 
-	/** @var Html <a> html tag */
-	protected $elementPrototype;
+	// <a> html tag
+	protected Html $elementPrototype;
 
-	/** @var array */
-	protected $options = [];
+	protected array $options = [];
 
 
 	/**
-	 * @param Grid $grid
-	 * @param string $name
-	 * @param string $label
 	 * @param string $destination - first param for method $presenter->link()
 	 * @param array $arguments - second param for method $presenter->link()
 	 */
-	public function __construct(Grid $grid, string $name, string $label = NULL, string $destination = NULL, array $arguments = [])
-	{
+	public function __construct(
+		Grid $grid,
+		string $name,
+		string $label,
+		string $destination,
+		array $arguments = []
+	) {
 		$this->label = $label;
 		$this->destination = $destination;
 		$this->arguments = $arguments;
@@ -62,7 +65,7 @@ class Button extends Component
 	}
 
 
-	public function setIcon(string $name): self
+	public function setIcon(string $name): static
 	{
 		$this->setOption('icon', $name);
 		return $this;
@@ -71,13 +74,10 @@ class Button extends Component
 
 	/**
 	 * Sets user-specific option.
-	 * @param string $key
-	 * @param mixed $value
-	 * @return self
 	 */
-	public function setOption(string $key, $value): self
+	public function setOption(string $key, mixed $value): static
 	{
-		if ($value === NULL) {
+		if ($value === null) {
 			unset($this->options[$key]);
 		} else {
 			$this->options[$key] = $value;
@@ -87,7 +87,7 @@ class Button extends Component
 	}
 
 
-	public function setElementPrototype(Html $elementPrototype): self
+	public function setElementPrototype(Html $elementPrototype): static
 	{
 		$this->elementPrototype = $elementPrototype;
 		return $this;
@@ -112,12 +112,11 @@ class Button extends Component
 
 	/**
 	 * Returns element prototype (<a> html tag).
-	 * @return Html
 	 * @throws Exception
 	 */
 	public function getElementPrototype(): Html
 	{
-		if ($this->elementPrototype === NULL) {
+		if ($this->elementPrototype === null) {
 			$this->elementPrototype = Html::el('a')
 				->setClass(['grid-button-' . $this->getName()])
 				->setText($this->label);
@@ -133,11 +132,8 @@ class Button extends Component
 
 	/**
 	 * Returns user-specific option.
-	 * @param string $key
-	 * @param mixed $default
-	 * @return mixed
 	 */
-	public function getOption(string $key, $default = NULL)
+	public function getOption(string $key, mixed $default = null): mixed
 	{
 		return isset($this->options[$key]) ? $this->options[$key] : $default;
 	}
@@ -145,7 +141,6 @@ class Button extends Component
 
 	/**
 	 * Returns user-specific options.
-	 * @return array
 	 */
 	public function getOptions(): array
 	{
@@ -154,12 +149,11 @@ class Button extends Component
 
 
 	/**
-	 * @return string
 	 * @internal
 	 */
 	public function getDestination(): string
 	{
-		if ($this->destination === NULL) {
+		if ($this->destination === null) {
 			$this->destination = $this->getName();
 		}
 
@@ -168,7 +162,6 @@ class Button extends Component
 
 
 	/**
-	 * @return array
 	 * @internal
 	 */
 	public function getArguments(): array
@@ -181,9 +174,8 @@ class Button extends Component
 
 	/**
 	 * @throws Exception
-	 * @return void
 	 */
-	public function render()
+	public function render(): void
 	{
 		echo $this->getElement();
 	}

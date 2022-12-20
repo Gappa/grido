@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -14,6 +16,7 @@ namespace Grido\Components;
 use Grido\Exception;
 use Grido\Grid;
 use Grido\Helpers;
+use Nette\Forms\Container;
 
 /**
  * Operation with one or more rows.
@@ -30,11 +33,10 @@ class Operation extends Component
 	const ID = 'operations';
 
 
-	/** @var array callback on operation submit */
-	public $onSubmit;
+	// callback on operation submit
+	public array $onSubmit;
 
-	/** @var string */
-	protected $primaryKey;
+	protected string $primaryKey;
 
 
 	public function __construct(Grid $grid, array $operations, callable $onSubmit)
@@ -138,11 +140,10 @@ class Operation extends Component
 
 
 	/**
-	 * @param \Nette\Forms\Container $container
 	 * @throws Exception
 	 * @internal
 	 */
-	public function addCheckers(\Nette\Forms\Container $container): void
+	public function addCheckers(Container $container): void
 	{
 		$items = $this->grid->getData();
 		$primaryKey = $this->getPrimaryKey();

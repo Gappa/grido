@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -12,6 +14,7 @@
 namespace Grido\Components\Filters;
 
 use Grido\Exception;
+use Nette\Forms\Controls\TextInput;
 
 /**
  * Text input filter.
@@ -21,36 +24,27 @@ use Grido\Exception;
  * @author      Petr Bugyík
  *
  * @property int $suggestionLimit
- * @property-write callback $suggestionCallback
+ * @property-write callable $suggestionCallback
  */
 class Text extends Filter
 {
-    /** @var string */
-    protected $condition = 'LIKE ?';
+    protected mixed $condition = 'LIKE ?';
 
-    /** @var string */
-    protected $formatValue = '%%value%';
+    protected ?string $formatValue = '%%value%';
 
-    /** @var bool */
-    protected $suggestion = FALSE;
+    protected bool $suggestion = false;
 
-    /** @var mixed */
-    protected $suggestionColumn;
+    protected mixed $suggestionColumn;
 
-    /** @var int */
-    protected $suggestionLimit = 10;
+    protected int $suggestionLimit = 10;
 
-    /** @var callback */
+    /** @var callable */
     protected $suggestionCallback;
 
-    /**
-     * Allows suggestion.
-     * @param mixed $column
-     * @return Text
-     */
-    public function setSuggestion($column = NULL)
+
+    public function setSuggestion(mixed $column = null): static
     {
-        $this->suggestion = TRUE;
+        $this->suggestion = true;
         $this->suggestionColumn = $column;
 
         $prototype = $this->getControl()->getControlPrototype();
@@ -69,50 +63,37 @@ class Text extends Filter
         return $this;
     }
 
-    /**
-     * Sets a limit for suggestion select.
-     * @param int $limit
-     * @return \Grido\Components\Filters\Text
-     */
-    public function setSuggestionLimit($limit)
+
+    public function setSuggestionLimit(int $limit): static
     {
-        $this->suggestionLimit = (int) $limit;
+        $this->suggestionLimit = $limit;
         return $this;
     }
 
-    /**
-     * Sets custom data callback.
-     * @param callback $callback
-     * @return \Grido\Components\Filters\Text
-     */
-    public function setSuggestionCallback($callback)
+
+    public function setSuggestionCallback(callable $callback): static
     {
         $this->suggestionCallback = $callback;
         return $this;
     }
 
+
     /**********************************************************************************************/
 
-    /**
-     * @return int
-     */
-    public function getSuggestionLimit()
+
+    public function getSuggestionLimit(): int
     {
         return $this->suggestionLimit;
     }
 
-    /**
-     * @return callback
-     */
-    public function getSuggestionCallback()
+
+    public function getSuggestionCallback(): callable
     {
         return $this->suggestionCallback;
     }
 
-    /**
-     * @return string
-     */
-    public function getSuggestionColumn()
+
+    public function getSuggestionColumn(): string
     {
         return $this->suggestionColumn;
     }
@@ -122,7 +103,7 @@ class Text extends Filter
      * @internal
      * @throws Exception
      */
-    public function handleSuggest($query)
+    public function handleSuggest(string $query)
     {
         !empty($this->grid->onRegistered) && $this->grid->onRegistered($this->grid);
         $name = $this->getName();
@@ -138,7 +119,7 @@ class Text extends Filter
 
         $conditions = $this->grid->__getConditions($actualFilter);
 
-        if ($this->suggestionCallback === NULL) {
+        if ($this->suggestionCallback === null) {
             $conditions[] = $this->__getCondition($query);
 
             $column = $this->suggestionColumn ? $this->suggestionColumn : current($this->getColumn());
@@ -153,12 +134,10 @@ class Text extends Filter
         $this->getPresenter()->sendResponse(new \Nette\Application\Responses\JsonResponse($items));
     }
 
-    /**
-     * @return \Nette\Forms\Controls\TextInput
-     */
-    protected function getFormControl()
+
+    protected function getFormControl(): TextInput
     {
-        $control = new \Nette\Forms\Controls\TextInput($this->label);
+        $control = new TextInput($this->label);
         $control->getControlPrototype()->class[] = 'text';
 
         return $control;

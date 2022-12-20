@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -31,8 +33,7 @@ class ArraySource implements IDataSource
 {
 
 	use Nette\SmartObject;
-	/** @var array */
-	protected $data;
+	protected array $data;
 
 
 	public function __construct(array $data)
@@ -43,13 +44,10 @@ class ArraySource implements IDataSource
 
 	/**
 	 * This method needs tests!
-	 * @param Condition $condition
-	 * @param array $data
-	 * @return array
 	 */
-	protected function makeWhere(Condition $condition, array $data = NULL): array
+	protected function makeWhere(Condition $condition, array $data = null): array
 	{
-		$data = $data === NULL ? $this->data : $data;
+		$data = $data === null ? $this->data : $data;
 
 		return array_filter($data, function ($row) use ($condition) {
 			if ($condition->callback) {
@@ -66,7 +64,7 @@ class ArraySource implements IDataSource
 					$results[] = (int) $this->compare(
 						$row[$column],
 						$condition->condition[$i],
-						isset($condition->value[$i]) ? $condition->value[$i] : NULL
+						isset($condition->value[$i]) ? $condition->value[$i] : null
 					);
 
 					$i++;
@@ -80,13 +78,9 @@ class ArraySource implements IDataSource
 
 
 	/**
-	 * @param string $actual
-	 * @param string $condition
-	 * @param mixed $expected
 	 * @throws Exception
-	 * @return bool
 	 */
-	public function compare($actual, $condition, $expected)
+	public function compare(string $actual, string $condition, mixed $expected): bool
 	{
 		$expected = (array) $expected;
 		$expected = current($expected);
@@ -102,10 +96,10 @@ class ArraySource implements IDataSource
 			return $actual == $expected;
 		} elseif ($cond === '<>') {
 			return $actual != $expected;
-		} elseif ($cond === 'IS NULL') {
-			return $actual === NULL;
-		} elseif ($cond === 'IS NOT NULL') {
-			return $actual !== NULL;
+		} elseif ($cond === 'IS null') {
+			return $actual === null;
+		} elseif ($cond === 'IS NOT null') {
+			return $actual !== null;
 		} elseif ($cond === '<') {
 			return (int) $actual < $expected;
 		} elseif ($cond === '<=') {
@@ -122,28 +116,19 @@ class ArraySource implements IDataSource
 
 	/*	 * ********************************* interface IDataSource *********************************** */
 
-	/**
-	 * @return int
-	 */
-	public function getCount()
+	public function getCount(): int
 	{
 		return count($this->data);
 	}
 
 
-	/**
-	 * @return array
-	 */
-	public function getData()
+	public function getData(): array
 	{
 		return $this->data;
 	}
 
 
-	/**
-	 * @param array $conditions
-	 */
-	public function filter(array $conditions)
+	public function filter(array $conditions): void
 	{
 		foreach ($conditions as $condition) {
 			$this->data = $this->makeWhere($condition);
@@ -151,18 +136,13 @@ class ArraySource implements IDataSource
 	}
 
 
-	/**
-	 * @param int $offset
-	 * @param int $limit
-	 */
-	public function limit($offset, $limit)
+	public function limit(int $offset, int $limit): void
 	{
 		$this->data = array_slice($this->data, $offset, $limit);
 	}
 
 
 	/**
-	 * @param array $sorting
 	 * @throws Exception
 	 */
 	public function sort(array $sorting)
@@ -195,13 +175,9 @@ class ArraySource implements IDataSource
 
 
 	/**
-	 * @param mixed $column
-	 * @param array $conditions
-	 * @param int $limit
-	 * @return array
 	 * @throws Exception
 	 */
-	public function suggest($column, array $conditions, $limit)
+	public function suggest(mixed $column, array $conditions, int $limit): array
 	{
 		$data = $this->data;
 		foreach ($conditions as $condition) {

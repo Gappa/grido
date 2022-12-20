@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -17,7 +19,13 @@ use Grido\Components\Paginator;
 use Grido\Components\Columns\Column;
 use Grido\Components\Filters\Filter;
 use Grido\Components\Actions\Action;
+use Grido\DataSources\IDataSource;
 use Nette\Application\UI\Presenter;
+use Nette\Application\UI\Template;
+use Nette\Forms\Controls\SubmitButton;
+use Nette\Http\SessionSection;
+use Nette\Localization\Translator;
+use Nette\Utils\Html;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 /**
@@ -26,23 +34,23 @@ use Symfony\Component\PropertyAccess\PropertyAccessor;
  * @package     Grido
  * @author      Petr Bugyík
  *
- * @property-read int $count
+ * @property-read ?int $count
  * @property-read mixed $data
- * @property-read \Nette\Utils\Html $tablePrototype
+ * @property-read Html $tablePrototype
  * @property-read PropertyAccessor $propertyAccessor
  * @property-read Customization $customization
  * @property-write string $templateFile
  * @property bool $rememberState
- * @property array $defaultPerPage
+ * @property int $defaultPerPage
  * @property array $defaultFilter
  * @property array $defaultSort
  * @property array $perPageList
- * @property \Nette\Localization\ITranslator $translator
+ * @property ?Translator $translator
  * @property Paginator $paginator
  * @property string $primaryKey
  * @property string $filterRenderType
- * @property DataSources\IDataSource $model
- * @property callback $rowCallback
+ * @property IDataSource $model
+ * @property callable $rowCallback
  * @property bool $strictMode
  * @method void onRegistered(Grid $grid)
  * @method void onRender(Grid $grid)
@@ -55,85 +63,68 @@ class Grid extends Components\Container
 	const CLIENT_SIDE_OPTIONS = 'grido-options';
 
 
-	/** @var int @persistent */
-	public $page = 1;
+	/** @persistent */
+	public int $page = 1;
 
-	/** @var int @persistent */
-	public $perPage;
+	/** @persistent */
+	public ?int $perPage = null;
 
-	/** @var array @persistent */
-	public $sort = [];
+	/** @persistent */
+	public array $sort = [];
 
-	/** @var array @persistent */
-	public $filter = [];
+	/** @persistent */
+	public array $filter = [];
 
-	/** @var array event on all grid's components registered */
-	public $onRegistered;
+	// event on all grid's components registered
+	public array $onRegistered;
 
-	/** @var array event on render */
-	public $onRender;
+	// event on render
+	public array $onRender;
 
-	/** @var array event for modifying data */
-	public $onFetchData;
+	// event for modifying data
+	public array $onFetchData;
 
 	/** @var callback returns tr html element; function($row, Html $tr) */
-	protected $rowCallback;
+	protected /*callable*/ $rowCallback;
 
-	/** @var \Nette\Utils\Html */
-	protected $tablePrototype;
+	protected ?Html $tablePrototype = null;
 
-	/** @var bool */
-	protected $rememberState = false;
+	protected bool $rememberState = false;
 
-	/** @var string */
-	protected $rememberStateSectionName;
+	protected ?string $rememberStateSectionName = null;
 
-	/** @var string */
-	protected $primaryKey = 'id';
+	protected string $primaryKey = 'id';
 
-	/** @var string */
-	protected $filterRenderType;
+	protected ?string $filterRenderType = null;
 
-	/** @var array */
-	protected $perPageList = [10, 20, 30, 50, 100];
+	protected array $perPageList = [10, 20, 30, 50, 100];
 
-	/** @var int */
-	protected $defaultPerPage = 20;
+	protected int $defaultPerPage = 20;
 
-	/** @var array */
-	protected $defaultFilter = [];
+	protected array $defaultFilter = [];
 
-	/** @var array */
-	protected $defaultSort = [];
+	protected array $defaultSort = [];
 
-	/** @var DataSources\IDataSource */
-	protected $model;
+	protected IDataSource $model;
 
-	/** @var int total count of items */
-	protected $count;
+	// total count of items
+	protected ?int $count = null;
 
-	/** @var mixed */
-	protected $data;
+	protected mixed $data = null;
 
-	/** @var Paginator */
-	protected $paginator;
+	protected ?Paginator $paginator = null;
 
-	/** @var \Nette\Localization\ITranslator */
-	protected $translator;
+	protected ?Translator $translator = null;
 
-	/** @var PropertyAccessor */
-	protected $propertyAccessor;
+	protected ?PropertyAccessor $propertyAccessor = null;
 
-	/** @var bool */
-	protected $strictMode = true;
+	protected bool $strictMode = true;
 
-	/** @var array */
-	protected $options = [
+	protected array $options = [
 		self::CLIENT_SIDE_OPTIONS => []
 	];
 
-	/** @var Customization */
-	protected $customization;
+	protected ?Customization $customization = null;
 
 
 	/**
@@ -152,14 +143,11 @@ class Grid extends Components\Container
 
 	/**
 	 * Sets a model that implements the interface Grido\DataSources\IDataSource or data-source object.
-	 * @param mixed $model
-	 * @param bool $forceWrapper
 	 * @throws Exception
-	 * @return Grid
 	 */
-	public function setModel($model, bool $forceWrapper = false): Grid
+	public function setModel(mixed $model, bool $forceWrapper = false): Grid
 	{
-		$this->model = $model instanceof DataSources\IDataSource && $forceWrapper === false ? $model : new DataSources\Model($model);
+		$this->model = $model instanceof IDataSource && $forceWrapper === false ? $model : new DataSources\Model($model);
 
 		return $this;
 	}
@@ -167,7 +155,6 @@ class Grid extends Components\Container
 
 	public function setDefaultPerPage(int $perPage): Grid
 	{
-		$perPage = (int) $perPage;
 		$this->defaultPerPage = $perPage;
 
 		if (!in_array($perPage, $this->perPageList)) {
@@ -187,9 +174,6 @@ class Grid extends Components\Container
 
 
 	/**
-	 * Sets default sorting.
-	 * @param array $sort
-	 * @return Grid
 	 * @throws Exception
 	 */
 	public function setDefaultSort(array $sort): Grid
@@ -221,7 +205,7 @@ class Grid extends Components\Container
 	}
 
 
-	public function setTranslator(\Nette\Localization\ITranslator $translator): Grid
+	public function setTranslator(Translator $translator): Grid
 	{
 		$this->translator = $translator;
 		return $this;
@@ -231,9 +215,7 @@ class Grid extends Components\Container
 	/**
 	 * Sets type of filter rendering.
 	 * Defaults inner (Filter::RENDER_INNER) if column does not exist then outer filter (Filter::RENDER_OUTER).
-	 * @param string $type
 	 * @throws Exception
-	 * @return Grid
 	 */
 	public function setFilterRenderType(string $type): Grid
 	{
@@ -254,12 +236,6 @@ class Grid extends Components\Container
 	}
 
 
-	/**
-	 * Sets grid primary key.
-	 * Defaults is "id".
-	 * @param string $key
-	 * @return Grid
-	 */
 	public function setPrimaryKey(string $key): Grid
 	{
 		$this->primaryKey = $key;
@@ -267,11 +243,6 @@ class Grid extends Components\Container
 	}
 
 
-	/**
-	 * Sets file name of custom template.
-	 * @param string $file
-	 * @return Grid
-	 */
 	public function setTemplateFile(string $file): Grid
 	{
 		$this->onRender[] = function () use ($file) {
@@ -285,15 +256,12 @@ class Grid extends Components\Container
 
 	/**
 	 * Sets saving state to session.
-	 * @param bool $state
-	 * @param string $sectionName
-	 * @return Grid
 	 */
-	public function setRememberState(bool $state = true, string $sectionName = null): Grid
+	public function setRememberState(bool $state = true, ?string $sectionName = null): Grid
 	{
 		$this->getPresenter(); //component must be attached to presenter
 		$this->getRememberSession(true); //start session if not
-		$this->rememberState = (bool) $state;
+		$this->rememberState = $state;
 		$this->rememberStateSectionName = $sectionName;
 
 		return $this;
@@ -303,8 +271,6 @@ class Grid extends Components\Container
 	/**
 	 * Sets callback for customizing tr html object.
 	 * Callback returns tr html element; function($row, Html $tr).
-	 * @param $callback
-	 * @return Grid
 	 */
 	public function setRowCallback(callable $callback): Grid
 	{
@@ -315,8 +281,6 @@ class Grid extends Components\Container
 
 	/**
 	 * Sets client-side options.
-	 * @param array $options
-	 * @return Grid
 	 */
 	public function setClientSideOptions(array $options): Grid
 	{
@@ -327,8 +291,6 @@ class Grid extends Components\Container
 
 	/**
 	 * Determines whether any user error will cause a notice.
-	 * @param bool $mode
-	 * @return Grid
 	 */
 	public function setStrictMode(bool $mode): Grid
 	{
@@ -337,7 +299,7 @@ class Grid extends Components\Container
 	}
 
 
-	public function setCustomization(Customization $customization)
+	public function setCustomization(Customization $customization): void
 	{
 		$this->customization = $customization;
 	}
@@ -409,10 +371,8 @@ class Grid extends Components\Container
 
 	/**
 	 * Returns actual filter values.
-	 * @param string $key
-	 * @return mixed
 	 */
-	public function getActualFilter(string $key = null)
+	public function getActualFilter(string $key = null): mixed
 	{
 		$filter = $this->filter ? $this->filter : $this->defaultFilter;
 		return $key !== null && isset($filter[$key]) ? $filter[$key] : $filter;
@@ -421,13 +381,9 @@ class Grid extends Components\Container
 
 	/**
 	 * Returns fetched data.
-	 * @param bool $applyPaging
-	 * @param bool $useCache
-	 * @param bool $fetch
 	 * @throws Exception
-	 * @return array|DataSources\IDataSource|\Nette\Database\Table\Selection
 	 */
-	public function getData(bool $applyPaging = true, bool $useCache = true, bool $fetch = true)
+	public function getData(bool $applyPaging = true, bool $useCache = true, bool $fetch = true): array|DataSources\IDataSource|\Nette\Database\Table\Selection
 	{
 		if ($this->getModel() === null) {
 			throw new Exception('Model cannot be empty, please use method $grid->setModel().');
@@ -466,7 +422,7 @@ class Grid extends Components\Container
 	}
 
 
-	public function getTranslator(): \Nette\Localization\ITranslator
+	public function getTranslator(): Translator
 	{
 		if ($this->translator === null) {
 			$this->setTranslator(new Translations\FileTranslator);
@@ -478,30 +434,31 @@ class Grid extends Components\Container
 
 	/**
 	 * Returns remember session for set expiration, etc.
-	 * @param bool $forceStart - if true, session will be started if not
-	 * @return \Nette\Http\SessionSection|null
 	 */
-	public function getRememberSession(bool $forceStart = false): ?\Nette\Http\SessionSection
+	public function getRememberSession(bool $forceStartSession = false): ?SessionSection
 	{
 		$presenter = $this->getPresenter();
 		$session = $presenter->getSession();
 
-		if (!$session->isStarted() && $forceStart) {
+		if (!$session->isStarted() && $forceStartSession) {
 			$session->start();
 		}
 
-		return $session->isStarted() ? ($session->getSection($this->rememberStateSectionName ?: ($presenter->name . ':' . $this->getUniqueId()))) : null;
+		return $session->isStarted() ?
+			$session->getSection(
+				$this->rememberStateSectionName ?: ($presenter->name . ':' . $this->getUniqueId())
+			)
+			: null;
 	}
 
 
 	/**
 	 * Returns table html element of grid.
-	 * @return \Nette\Utils\Html
 	 */
-	public function getTablePrototype(): \Nette\Utils\Html
+	public function getTablePrototype(): Html
 	{
 		if ($this->tablePrototype === null) {
-			$this->tablePrototype = \Nette\Utils\Html::el('table');
+			$this->tablePrototype = Html::el('table');
 			$this->tablePrototype->id($this->getName());
 		}
 
@@ -510,7 +467,6 @@ class Grid extends Components\Container
 
 
 	/**
-	 * @return string
 	 * @internal
 	 */
 	public function getFilterRenderType(): string
@@ -536,7 +492,7 @@ class Grid extends Components\Container
 	}
 
 
-	public function getModel(): DataSources\IDataSource
+	public function getModel(): IDataSource
 	{
 		return $this->model;
 	}
@@ -559,12 +515,9 @@ class Grid extends Components\Container
 
 	/**
 	 * A simple wrapper around symfony/property-access with Nette Database dot notation support.
-	 * @param array|object $object
-	 * @param string $name
-	 * @return mixed
 	 * @internal
 	 */
-	public function getProperty($object, string $name)
+	public function getProperty(array|object $object, string $name): mixed
 	{
 		if ($object instanceof \Nette\Database\Table\IRow && \Nette\Utils\Strings::contains($name, '.')) {
 			$parts = explode('.', $name);
@@ -603,10 +556,9 @@ class Grid extends Components\Container
 
 	/**
 	 * @param mixed $row item from db
-	 * @return \Nette\Utils\Html
 	 * @internal
 	 */
-	public function getRowPrototype($row): \Nette\Utils\Html
+	public function getRowPrototype(mixed $row): Html
 	{
 		try {
 			$primaryValue = $this->getProperty($row, $this->getPrimaryKey());
@@ -614,7 +566,7 @@ class Grid extends Components\Container
 			$primaryValue = null;
 		}
 
-		$tr = \Nette\Utils\Html::el('tr');
+		$tr = Html::el('tr');
 		$primaryValue ? $tr->class[] = "grid-row-$primaryValue" : null;
 
 		if ($this->rowCallback) {
@@ -625,28 +577,18 @@ class Grid extends Components\Container
 	}
 
 
-	/**
-	 * Returns client-side options.
-	 * @return array
-	 */
 	public function getClientSideOptions(): array
 	{
 		return (array) $this->options[self::CLIENT_SIDE_OPTIONS];
 	}
 
 
-	/**
-	 * @return bool
-	 */
 	public function isStrictMode(): bool
 	{
 		return $this->strictMode;
 	}
 
 
-	/**
-	 * @return Customization
-	 */
 	public function getCustomization(): Customization
 	{
 		if ($this->customization === null) {
@@ -679,7 +621,6 @@ class Grid extends Components\Container
 
 	/**
 	 * Saves state informations for next request.
-	 * @param array $params
 	 * @internal
 	 */
 	public function saveState(array &$params): void
@@ -700,17 +641,15 @@ class Grid extends Components\Container
 
 
 	/**
-	 * @param int $page
 	 * @internal
 	 */
-	public function handlePage($page): void
+	public function handlePage(int $page): void
 	{
 		$this->reload();
 	}
 
 
 	/**
-	 * @param array $sort
 	 * @internal
 	 */
 	public function handleSort(array $sort): void
@@ -721,14 +660,15 @@ class Grid extends Components\Container
 
 
 	/**
-	 * @param \Nette\Forms\Controls\SubmitButton $button
 	 * @internal
 	 */
-	public function handleFilter(\Nette\Forms\Controls\SubmitButton $button): void
+	public function handleFilter(SubmitButton $button): void
 	{
 		$values = $button->form->values[Filter::ID];
-		$session = $this->rememberState //session filter
-			? isset($this->getRememberSession(true)->params['filter']) ? $this->getRememberSession(true)->params['filter'] : [] : [];
+		$session = $this->rememberState // session filter
+			?
+			($this->getRememberSession(true)->params['filter'] ?? [])
+			: [];
 
 		foreach ($values as $name => $value) {
 			if (is_numeric($value) || !empty($value) || isset($this->defaultFilter[$name]) || isset($session[$name])) {
@@ -744,10 +684,9 @@ class Grid extends Components\Container
 
 
 	/**
-	 * @param \Nette\Forms\Controls\SubmitButton $button
 	 * @internal
 	 */
-	public function handleReset(\Nette\Forms\Controls\SubmitButton $button): void
+	public function handleReset(SubmitButton $button): void
 	{
 		$this->sort = [];
 		$this->filter = [];
@@ -765,10 +704,9 @@ class Grid extends Components\Container
 
 
 	/**
-	 * @param \Nette\Forms\Controls\SubmitButton $button
 	 * @internal
 	 */
-	public function handlePerPage(\Nette\Forms\Controls\SubmitButton $button): void
+	public function handlePerPage(SubmitButton $button): void
 	{
 		$perPage = (int) $button->form['count']->value;
 		$this->perPage = $perPage == $this->defaultPerPage ? null : $perPage;
@@ -780,7 +718,6 @@ class Grid extends Components\Container
 
 	/**
 	 * Refresh wrapper.
-	 * @return void
 	 * @internal
 	 */
 	public function reload(): void
@@ -799,7 +736,7 @@ class Grid extends Components\Container
 	/**
 	 * @internal
 	 */
-	public function createTemplate(): \Nette\Application\UI\Template
+	public function createTemplate(): Template
 	{
 		$template = parent::createTemplate();
 		$template->setFile($this->getCustomization()->getTemplateFiles()[Customization::TEMPLATE_DEFAULT]);
@@ -887,8 +824,6 @@ class Grid extends Components\Container
 
 
 	/**
-	 * @param array $filter
-	 * @return array
 	 * @internal
 	 */
 	public function __getConditions(array $filter): array
@@ -995,9 +930,6 @@ class Grid extends Components\Container
 	}
 
 
-	/**
-	 * @return array
-	 */
 	protected function getItemsForCountSelect(): array
 	{
 		return array_combine($this->perPageList, $this->perPageList);
@@ -1006,9 +938,8 @@ class Grid extends Components\Container
 
 	/**
 	 * @internal
-	 * @param string $message
 	 */
-	public function __triggerUserNotice($message): void
+	public function __triggerUserNotice(string $message): void
 	{
 		if ($this->lookup(Presenter::class, false) && $session = $this->getRememberSession()) {
 			$session->remove();

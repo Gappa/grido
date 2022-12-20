@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Grido\Components\Exports;
 
 use Grido\Components\Columns\Column;

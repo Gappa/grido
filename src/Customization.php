@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -31,17 +33,13 @@ class Customization
 	const TEMPLATE_BOOTSTRAP = 'bootstrap';
 
 
-	/** @var Grid */
-	protected $grid;
+	protected Grid $grid;
 
-	/** @var string|array */
-	protected $buttonClass;
+	protected string|array $buttonClass;
 
-	/** @var string|array */
-	protected $iconClass;
+	protected string|array $iconClass;
 
-	/** @var array */
-	protected $templateFiles = [];
+	protected array $templateFiles = [];
 
 
 	public function __construct(Grid $grid)
@@ -50,22 +48,14 @@ class Customization
 	}
 
 
-	/**
-	 * @param string|array $class
-	 * @return Customization
-	 */
-	public function setButtonClass($class): self
+	public function setButtonClass(string|array $class): static
 	{
 		$this->buttonClass = $class;
 		return $this;
 	}
 
 
-	/**
-	 * @param string|array $class
-	 * @return Customization
-	 */
-	public function setIconClass($class): self
+	public function setIconClass(string|array $class): static
 	{
 		$this->iconClass = $class;
 		return $this;
@@ -109,14 +99,14 @@ class Customization
 	}
 
 
-	public function useTemplateDefault(): self
+	public function useTemplateDefault(): static
 	{
 		$this->grid->setTemplateFile($this->getTemplateFiles()[self::TEMPLATE_DEFAULT]);
 		return $this;
 	}
 
 
-	public function useTemplateBootstrap(): self
+	public function useTemplateBootstrap(): static
 	{
 		$this->grid->setTemplateFile($this->getTemplateFiles()[self::TEMPLATE_BOOTSTRAP]);
 		return $this;

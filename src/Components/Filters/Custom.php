@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -11,6 +13,9 @@
 
 namespace Grido\Components\Filters;
 
+use Grido\Grid;
+use Nette\Forms\Control;
+
 /**
  * Filter with custom form control.
  *
@@ -18,31 +23,24 @@ namespace Grido\Components\Filters;
  * @subpackage  Components\Filters
  * @author      Petr Bugyík
  *
- * @property-read \Nette\Forms\IControl $formControl
+ * @property-read Control $formControl
  */
 class Custom extends Filter
 {
-    /** @var \Nette\Forms\IControl */
-    protected $formControl;
+    protected Control $formControl;
 
-    /**
-     * @param \Grido\Grid $grid
-     * @param string $name
-     * @param string $label
-     * @param \Nette\Forms\IControl $formControl
-     */
-    public function __construct($grid, $name, $label, \Nette\Forms\IControl $formControl)
+
+    public function __construct(Grid $grid, string $name, string $label, Control $formControl)
     {
         $this->formControl = $formControl;
-
         parent::__construct($grid, $name, $label);
     }
 
+
     /**
-     * @return \Nette\Forms\IControl
      * @internal
      */
-    public function getFormControl()
+    public function getFormControl(): Control
     {
         return $this->formControl;
     }

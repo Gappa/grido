@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -12,6 +14,7 @@
 namespace Grido\Components\Actions;
 
 use Grido\Exception;
+use Grido\Grid;
 use Nette\Utils\Html;
 
 /**
@@ -22,37 +25,31 @@ use Nette\Utils\Html;
  * @author      Petr Bugyík
  *
  * @property-read Html $element
- * @property-write callback $customRender
- * @property-write callback $disable
- * @property Html $elementPrototype
- * @property string $primaryKey
- * @property string $options
+ * @property-write ?callable $customRender
+ * @property-write ?callable $disable
+ * @property ?Html $elementPrototype
+ * @property ?string $primaryKey
+ * @property array $options
  */
 abstract class Action extends \Grido\Components\Component
 {
     const ID = 'actions';
 
-    /** @var Html <a> html tag */
-    protected $elementPrototype;
+    protected ?Html $elementPrototype = null;
 
-    /** @var callback for custom rendering */
-    protected $customRender;
+    /** @var callable for custom rendering */
+    protected $customRender = null;
 
-    /** @var string - name of primary key f.e.: link->('Article:edit', array($primaryKey => 1)) */
-    protected $primaryKey;
+    // name of primary key f.e.: link->('Article:edit', array($primaryKey => 1))
+    protected ?string $primaryKey = null;
 
-    /** @var callback for disabling */
-    protected $disable;
+    /** @var callable for disabling */
+    protected $disable = null;
 
-    /** @var string */
-    protected $options;
+    protected array $options = [];
 
-    /**
-     * @param \Grido\Grid $grid
-     * @param string $name
-     * @param string $label
-     */
-    public function __construct($grid, $name, $label)
+
+    public function __construct(Grid $grid, string $name, string $label)
     {
         $this->addComponentToGrid($grid, $name);
 
@@ -60,82 +57,61 @@ abstract class Action extends \Grido\Components\Component
         $this->label = $this->translate($label);
     }
 
-    /**
-     * Sets html element.
-     * @param Html $elementPrototype
-     * @return Action
-     */
-    public function setElementPrototype(Html $elementPrototype)
+
+    public function setElementPrototype(Html $elementPrototype): static
     {
         $this->elementPrototype = $elementPrototype;
         return $this;
     }
 
-    /**
-     * Sets callback for custom rendering.
-     * @param callback
-     * @return Action
-     */
-    public function setCustomRender($callback)
+    public function setCustomRender(callable $callback): static
     {
         $this->customRender = $callback;
         return $this;
     }
 
-    /**
-     * Sets primary key.
-     * @param string $primaryKey
-     * @return Action
-     */
-    public function setPrimaryKey($primaryKey)
+
+    public function setPrimaryKey(string $primaryKey): static
     {
         $this->primaryKey = $primaryKey;
         return $this;
     }
 
+
     /**
      * Sets callback for disable.
-     * Callback should return TRUE if the action is not allowed for current item.
-     * @param callback
-     * @return Action
+     * Callback should return true if the action is not allowed for current item.
      */
-    public function setDisable($callback)
+    public function setDisable(callable $callback): static
     {
         $this->disable = $callback;
         return $this;
     }
 
+
     /**
      * Sets client side confirm.
-     * @param string|callback $confirm
-     * @return Action
      */
-    public function setConfirm($confirm)
+    public function setConfirm(string|callable $confirm): static
     {
         $this->setOption('confirm', $confirm);
         return $this;
     }
 
-    /**
-     * Sets name of icon.
-     * @param string $name
-     * @return Action
-     */
-    public function setIcon($name)
+
+    public function setIcon(string $name): static
     {
         $this->setOption('icon', $name);
         return $this;
     }
 
+
     /**
      * Sets user-specific option.
-     * @param string $key
-     * @param mixed $value
-     * @return Action
      */
-    public function setOption($key, $value)
+    public function setOption(string $key, mixed $value): static
     {
-        if ($value === NULL) {
+        if ($value === null) {
             unset($this->options[$key]);
         } else {
             $this->options[$key] = $value;
@@ -144,16 +120,16 @@ abstract class Action extends \Grido\Components\Component
         return $this;
     }
 
+
     /**********************************************************************************************/
 
+
     /**
-     * Returns element prototype (<a> html tag).
-     * @return Html
      * @throws Exception
      */
-    public function getElementPrototype()
+    public function getElementPrototype(): Html
     {
-        if ($this->elementPrototype === NULL) {
+        if ($this->elementPrototype === null) {
             $this->elementPrototype = Html::el('a')
                 ->setClass(['grid-action-' . $this->getName()])
                 ->setText($this->label);
@@ -166,25 +142,24 @@ abstract class Action extends \Grido\Components\Component
         return $this->elementPrototype;
     }
 
+
     /**
-     * @return string
      * @internal
      */
-    public function getPrimaryKey()
+    public function getPrimaryKey(): string
     {
-        if ($this->primaryKey === NULL) {
+        if ($this->primaryKey === null) {
             $this->primaryKey = $this->grid->getPrimaryKey();
         }
 
         return $this->primaryKey;
     }
 
+
     /**
-     * @param mixed $row
-     * @return Html
      * @internal
      */
-    public function getElement($row)
+    public function getElement(mixed $row): Html
     {
         $element = clone $this->getElementPrototype();
 
@@ -203,36 +178,34 @@ abstract class Action extends \Grido\Components\Component
         return $element;
     }
 
+
     /**
      * Returns user-specific option.
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
      */
-    public function getOption($key, $default = NULL)
+    public function getOption(string $key, mixed $default = null): mixed
     {
         return isset($this->options[$key])
             ? $this->options[$key]
             : $default;
     }
 
+
     /**
      * Returns user-specific options.
-     * @return array
      */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }
 
+
     /**********************************************************************************************/
 
+
     /**
-     * @param mixed $row
      * @throws Exception
-     * @return void
      */
-    public function render($row)
+    public function render(mixed $row): void
     {
         if (!$row || ($this->disable && call_user_func_array($this->disable, [$row]))) {
             return;

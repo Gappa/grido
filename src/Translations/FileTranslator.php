@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -21,12 +23,11 @@ use Nette;
  * @subpackage  Translations
  * @author      Petr Bugyík
  */
-class FileTranslator implements \Nette\Localization\ITranslator
+class FileTranslator implements \Nette\Localization\Translator
 {
 
 	use Nette\SmartObject;
-	/** @var array */
-	protected $translations = [];
+	protected array $translations = [];
 
 
 	public function __construct(string $lang = 'en', array $translations = [])
@@ -36,16 +37,14 @@ class FileTranslator implements \Nette\Localization\ITranslator
 	}
 
 
-	public function setLang(string $lang)
+	public function setLang(string $lang): void
 	{
 		$this->translations = $this->getTranslationsFromFile($lang);
 	}
 
 
 	/**
-	 * @param string $lang
 	 * @throws Exception
-	 * @return array
 	 */
 	protected function getTranslationsFromFile(string $lang): array
 	{

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -11,8 +13,18 @@
 
 namespace Grido\Components\Columns;
 
+use Grido\Components\Filters\Check;
+use Grido\Components\Filters\Custom;
+use Grido\Components\Filters\Date;
+use Grido\Components\Filters\DateRange;
+use Grido\Components\Filters\Number;
+use Grido\Components\Filters\Select;
+use Grido\Components\Filters\Text;
 use Grido\Helpers;
 use Grido\Exception;
+use Grido\Grid;
+use Nette\Forms\Control;
+use Nette\Utils\Html;
 
 /**
  * Column grid.
@@ -22,13 +34,13 @@ use Grido\Exception;
  * @author      Petr Bugyík
  *
  * @property-read string $sort
- * @property-read \Nette\Utils\Html $cellPrototype
- * @property-read \Nette\Utils\Html $headerPrototype
- * @property-write callback $cellCallback
+ * @property-read Html $cellPrototype
+ * @property-read Html $headerPrototype
+ * @property-write ?callable $cellCallback
  * @property-write string $defaultSorting
  * @property mixed $customRender
  * @property-write array $customRenderVariables
- * @property-write mixed $customRenderExport
+ * @property-write ?callable $customRenderExport
  * @property-write array $replacements
  * @property-write bool $sortable
  * @property string $column
@@ -42,46 +54,34 @@ abstract class Column extends \Grido\Components\Component
     const ORDER_ASC = 'asc';
     const ORDER_DESC = 'desc';
 
-    /** @var string */
-    protected $sort;
+    protected ?string $sort = null;
 
-    /** @var string */
-    protected $column;
+    protected ?string $column = null;
 
-    /** @var \Nette\Utils\Html <td> html tag */
-    protected $cellPrototype;
+    // <td> html tag
+    protected ?Html $cellPrototype = null;
 
-    /** @var callback returns td html element; function($row, Html $td) */
+    /** @var ?callable returns td html element; function($row, Html $td) */
     protected $cellCallback;
 
-    /** @var \Nette\Utils\Html <th> html tag */
-    protected $headerPrototype;
+    // <th> html tag
+    protected ?Html $headerPrototype = null;
 
-    /** @var mixed custom rendering */
-    protected $customRender;
+    protected mixed $customRender = null;
 
-    /** @var array custom rendering template variables */
-    protected $customRenderVariables = [];
+    protected array $customRenderVariables = [];
 
-    /** @var mixed custom export rendering */
-    protected $customRenderExport;
+    protected /*?callable*/ $customRenderExport;
 
-    /** @var bool */
-    protected $sortable = FALSE;
+    protected bool $sortable = false;
 
-    /** @var array of arrays('pattern' => 'replacement') */
-    protected $replacements = [];
+    // of arrays('pattern' => 'replacement')
+    protected array $replacements = [];
 
-    /** @var bool */
-    protected $translateReplacements = TRUE;
+    protected bool $translateReplacements = true;
 
 
-    /**
-     * @param \Grido\Grid $grid
-     * @param string $name
-     * @param string $label
-     */
-    public function __construct($grid, $name, $label)
+    public function __construct(Grid $grid, string $name, string $label)
     {
         $this->addComponentToGrid($grid, Helpers::formatColumnName($name));
 
@@ -89,54 +89,43 @@ abstract class Column extends \Grido\Components\Component
         $this->label = $label;
     }
 
-    /**
-     * @param bool $sortable
-     * @return Column
-     */
-    public function setSortable($sortable = TRUE)
+
+    public function setSortable(bool $sortable = true): static
     {
         $this->sortable = (bool) $sortable;
         return $this;
     }
 
+
     /**
      * @param array $replacement array('pattern' => 'replacement')
-     * @param bool $translate
-     * @return Column
      */
-    public function setReplacement(array $replacement, bool $translate = TRUE)
+    public function setReplacement(array $replacement, bool $translate = true): static
     {
         $this->replacements = $this->replacements + $replacement;
         $this->translateReplacements = $translate;
         return $this;
     }
 
-    /**
-     * @param mixed $column
-     * @return Column
-     */
-    public function setColumn($column)
+
+    public function setColumn(mixed $column): static
     {
         $this->column = $column;
         return $this;
     }
 
-    /**
-     * @param string $dir
-     * @return Column
-     */
-    public function setDefaultSort($dir)
+
+    public function setDefaultSort(string $dir): static
     {
         $this->grid->setDefaultSort([$this->getName() => $dir]);
         return $this;
     }
 
+
     /**
-     * @param mixed $callback callback or string for name of template filename
-     * @param array $variables - template variables
-     * @return Column
+     * @param callable|string $callback callback or string for name of template filename
      */
-    public function setCustomRender($callback, $variables = [])
+    public function setCustomRender(callable|string $callback, array $variables = []): static
     {
         $this->customRender = $callback;
         $this->customRenderVariables = $variables;
@@ -144,43 +133,34 @@ abstract class Column extends \Grido\Components\Component
         return $this;
     }
 
-    /**
-     * @param mixed $callback |
-     * @return Column
-     */
-    public function setCustomRenderExport($callback)
+
+    public function setCustomRenderExport(callable $callback): static
     {
         $this->customRenderExport = $callback;
         return $this;
     }
 
-    /**
-     * @param callback $callback
-     * @return Column
-     */
-    public function setCellCallback($callback)
+
+    public function setCellCallback(callable $callback): static
     {
         $this->cellCallback = $callback;
         return $this;
     }
 
+
     /**********************************************************************************************/
 
-    /**
-     * Returns cell prototype (<td> html tag).
-     * @param mixed $row
-     * @return \Nette\Utils\Html
-     */
-    public function getCellPrototype($row = NULL)
+
+    public function getCellPrototype(mixed $row = null): Html
     {
         $td = $this->cellPrototype;
 
-        if ($td === NULL) { //cache
-            $td = $this->cellPrototype = \Nette\Utils\Html::el('td')
+        if ($td === null) { //cache
+            $td = $this->cellPrototype = Html::el('td')
                 ->setClass(['grid-cell-' . $this->getName()]);
         }
 
-        if ($this->cellCallback && $row !== NULL) {
+        if ($this->cellCallback && $row !== null) {
             $td = clone $td;
             $td = call_user_func_array($this->cellCallback, [$row, $td]);
         }
@@ -188,14 +168,11 @@ abstract class Column extends \Grido\Components\Component
         return $td;
     }
 
-    /**
-     * Returns header cell prototype (<th> html tag).
-     * @return \Nette\Utils\Html
-     */
-    public function getHeaderPrototype()
+
+    public function getHeaderPrototype(): Html
     {
-        if ($this->headerPrototype === NULL) {
-            $this->headerPrototype = \Nette\Utils\Html::el('th')
+        if ($this->headerPrototype === null) {
+            $this->headerPrototype = Html::el('th')
                 ->setClass(['column', 'grid-header-' . $this->getName()]);
         }
 
@@ -208,91 +185,92 @@ abstract class Column extends \Grido\Components\Component
         return $this->headerPrototype;
     }
 
+
     /**
-     * @return mixed
      * @internal
      */
-    public function getColumn()
+    public function getColumn(): ?string
     {
         return $this->column ? $this->column : $this->getName();
     }
 
+
     /**
-     * @return string
      * @internal
      */
-    public function getSort()
+    public function getSort(): ?string
     {
-        if ($this->sort === NULL) {
+        if ($this->sort === null) {
             $name = $this->getName();
 
             $sort = isset($this->grid->sort[$name])
                 ? $this->grid->sort[$name]
-                : NULL;
+                : null;
 
-            $this->sort = $sort === NULL ? NULL : $sort;
+            $this->sort = $sort === null ? null : $sort;
         }
 
         return $this->sort;
     }
 
+
     /**
-     * @return mixed
      * @internal
      */
-    public function getCustomRender()
+    public function getCustomRender(): mixed
     {
         return $this->customRender;
     }
 
+
     /**
-     * @return array
      * @internal
      */
-    public function getCustomRenderVariables()
+    public function getCustomRenderVariables(): array
     {
         return $this->customRenderVariables;
     }
 
+
     /**
-     * @return mixed
      * @internal
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return is_string($this->label)
             ? $this->translate($this->label)
             : $this->label;
     }
 
+
     /**********************************************************************************************/
 
+
     /**
-     * @return bool
      * @internal
      */
-    public function isSortable()
+    public function isSortable(): bool
     {
         return $this->sortable;
     }
 
+
     /**
-     * @return bool
      * @internal
      */
-    public function hasFilter()
+    public function hasFilter(): bool
     {
-        return (bool) $this->grid->getFilter($this->getName(), FALSE);
+        return (bool) $this->grid->getFilter($this->getName(), false);
     }
+
 
     /**********************************************************************************************/
 
+
     /**
-     * @param mixed $row
-     * @return string
      * @internal
      */
-    public function render($row)
+    public function render(mixed $row): mixed
     {
         if (is_callable($this->customRender)) {
             return call_user_func_array($this->customRender, [$row, $this->customRenderVariables]);
@@ -302,12 +280,11 @@ abstract class Column extends \Grido\Components\Component
         return $this->formatValue($value);
     }
 
+
     /**
-     * @param mixed $row
-     * @return string
      * @internal
      */
-    public function renderExport($row)
+    public function renderExport(mixed $row): mixed
     {
         if (is_callable($this->customRenderExport)) {
             return call_user_func_array($this->customRenderExport, [$row]);
@@ -317,12 +294,11 @@ abstract class Column extends \Grido\Components\Component
         return strip_tags((string) $this->applyReplacement($value));
     }
 
+
     /**
-     * @param mixed $row
      * @throws Exception
-     * @return mixed
      */
-    protected function getValue($row)
+    protected function getValue(mixed $row): mixed
     {
         $column = $this->getColumn();
         if (is_string($column)) {
@@ -334,13 +310,10 @@ abstract class Column extends \Grido\Components\Component
         }
     }
 
-    /**
-     * @param mixed $value
-     * @return mixed
-     */
-    protected function applyReplacement($value)
+
+    protected function applyReplacement(mixed $value): mixed
     {
-        if ((is_scalar($value) || $value === NULL) && isset($this->replacements[(string) $value])) {
+        if ((is_scalar($value) || $value === null) && isset($this->replacements[(string) $value])) {
             $replaced = $this->replacements[(string) $value];
             if (is_scalar($replaced) && $this->translateReplacements) {
                 $replaced = $this->translate($replaced);
@@ -354,11 +327,8 @@ abstract class Column extends \Grido\Components\Component
         return $value;
     }
 
-    /**
-     * @param mixed $value
-     * @return mixed
-     */
-    protected function formatValue($value)
+
+    protected function formatValue(mixed $value): mixed
     {
         $value = is_string($value)
             ? \Latte\Runtime\Filters::escapeHtml($value)
@@ -367,63 +337,47 @@ abstract class Column extends \Grido\Components\Component
         return $this->applyReplacement($value);
     }
 
+
     /******************************* Aliases for filters ******************************************/
 
-    /**
-     * @return \Grido\Components\Filters\Text
-     */
-    public function setFilterText()
+
+    public function setFilterText(): Text
     {
         return $this->grid->addFilterText($this->getName(), $this->label);
     }
 
-    /**
-     * @return \Grido\Components\Filters\Date
-     */
-    public function setFilterDate()
+
+    public function setFilterDate(): Date
     {
         return $this->grid->addFilterDate($this->getName(), $this->label);
     }
 
-    /**
-     * @return \Grido\Components\Filters\DateRange
-     */
-    public function setFilterDateRange()
+
+    public function setFilterDateRange(): DateRange
     {
         return $this->grid->addFilterDateRange($this->getName(), $this->label);
     }
 
-    /**
-     * @return \Grido\Components\Filters\Check
-     */
-    public function setFilterCheck()
+
+    public function setFilterCheck(): Check
     {
         return $this->grid->addFilterCheck($this->getName(), $this->label);
     }
 
-    /**
-     * @param array $items
-     * @param bool $multiple
-     * @return \Grido\Components\Filters\Select
-     */
-    public function setFilterSelect(array $items = NULL, /*bool*/ $multiple = false)
+
+    public function setFilterSelect(array $items = null, bool $multiple = false): Select
     {
         return $this->grid->addFilterSelect($this->getName(), $this->label, $items, $multiple);
     }
 
-    /**
-     * @return \Grido\Components\Filters\Number
-     */
-    public function setFilterNumber()
+
+    public function setFilterNumber(): Number
     {
         return $this->grid->addFilterNumber($this->getName(), $this->label);
     }
 
-    /**
-     * @param \Nette\Forms\IControl $formControl
-     * @return \Grido\Components\Filters\Custom
-     */
-    public function setFilterCustom(\Nette\Forms\IControl $formControl)
+
+    public function setFilterCustom(Control $formControl): Custom
     {
         return $this->grid->addFilterCustom($this->getName(), $formControl);
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (http://grido.bugyik.cz)
  *
@@ -12,6 +14,9 @@
 namespace Grido\Components\Columns;
 
 use Grido\Exception;
+use Nette\Forms\Control;
+use Nette\Forms\Controls\TextInput;
+use Nette\Utils\Html;
 
 /**
  * An inline editable column.
@@ -21,42 +26,38 @@ use Grido\Exception;
  * @author      Jakub Kopřiva <kopriva.jakub@gmail.com>
  * @author      Petr Bugyík
  *
- * @property \Nette\Forms\IControl $editableControl
- * @property callback $editableCallback
- * @property callback $editableValueCallback
- * @property callback $editableRowCallback
+ * @property Control $editableControl
+ * @property callable $editableCallback
+ * @property callable $editableValueCallback
+ * @property callable $editableRowCallback
  * @property bool $editable
  * @property bool $editableDisabled
  */
 abstract class Editable extends Column
 {
-    /** @var bool */
-    protected $editable = FALSE;
+    protected bool $editable = false;
 
-    /** @var bool */
-    protected $editableDisabled = FALSE;
+    protected bool $editableDisabled = false;
 
-    /** @var \Nette\Forms\IControl Custom control for inline editing */
-    protected $editableControl;
+    // Custom control for inline editing
+    protected Control $editableControl;
 
-    /** @var callback for custom handling with edited data; function($id, $newValue, $oldValue, Editable $column) {} */
+    /** @var callable for custom handling with edited data; function($id, $newValue, $oldValue, Editable $column) {} */
     protected $editableCallback;
 
-    /** @var callback for custom value; function($row, Columns\Editable $column) {} */
+    /** @var callable for custom value; function($row, Columns\Editable $column) {} */
     protected $editableValueCallback;
 
-    /** @var callback for getting row; function($row, Columns\Editable $column) {} */
+    /** @var callable for getting row; function($row, Columns\Editable $column) {} */
     protected $editableRowCallback;
 
+
     /**
-     * Sets column as editable.
-     * @param callback $callback function($id, $newValue, $oldValue, Columns\Editable $column) {}
-     * @param \Nette\Forms\IControl $control
-     * @return Editable
+     * @param ?callable $callback function($id, $newValue, $oldValue, Columns\Editable $column) {}
      */
-    public function setEditable($callback = NULL, \Nette\Forms\IControl $control = NULL)
+    public function setEditable(?callable $callback = null, ?Control $control = null): static
     {
-        $this->editable = TRUE;
+        $this->editable = true;
         $this->setClientSideOptions();
 
         $callback && $this->setEditableCallback($callback);
@@ -65,12 +66,11 @@ abstract class Editable extends Column
         return $this;
     }
 
+
     /**
      * Sets control for inline editation.
-     * @param \Nette\Forms\IControl $control
-     * @return Editable
      */
-    public function setEditableControl(\Nette\Forms\IControl $control)
+    public function setEditableControl(Control $control): static
     {
         $this->isEditable() ?: $this->setEditable();
         $this->editableControl = $control;
@@ -78,12 +78,11 @@ abstract class Editable extends Column
         return $this;
     }
 
+
     /**
-     * Sets editable callback.
-     * @param callback $callback function($id, $newValue, $oldValue, Columns\Editable $column) {}
-     * @return Editable
+     * @param callable $callback function($id, $newValue, $oldValue, Columns\Editable $column) {}
      */
-    public function setEditableCallback($callback)
+    public function setEditableCallback(callable $callback): static
     {
         $this->isEditable() ?: $this->setEditable();
         $this->editableCallback = $callback;
@@ -91,12 +90,11 @@ abstract class Editable extends Column
         return $this;
     }
 
+
     /**
-     * Sets editable value callback.
-     * @param callback $callback for custom value; function($row, Columns\Editable $column) {}
-     * @return Editable
+     * @param callable $callback for custom value; function($row, Columns\Editable $column) {}
      */
-    public function setEditableValueCallback($callback)
+    public function setEditableValueCallback(callable $callback): static
     {
         $this->isEditable() ?: $this->setEditable();
         $this->editableValueCallback = $callback;
@@ -104,12 +102,12 @@ abstract class Editable extends Column
         return $this;
     }
 
+
     /**
      * Sets editable row callback - it's required when used editable collumn with customRenderCallback
-     * @param callback $callback for getting row; function($id, Columns\Editable $column) {}
-     * @return Editable
+     * @param callable $callback for getting row; function($id, Columns\Editable $column) {}
      */
-    public function setEditableRowCallback($callback)
+    public function setEditableRowCallback(callable $callback): static
     {
         $this->isEditable() ?: $this->setEditable();
         $this->editableRowCallback = $callback;
@@ -117,16 +115,15 @@ abstract class Editable extends Column
         return $this;
     }
 
-    /**
-     * @return Editable
-     */
-    public function disableEditable()
+
+    public function disableEditable(): static
     {
-        $this->editable = FALSE;
-        $this->editableDisabled = TRUE;
+        $this->editable = false;
+        $this->editableDisabled = true;
 
         return $this;
     }
+
 
     /**
      * @throws Exception
@@ -135,7 +132,7 @@ abstract class Editable extends Column
     {
         $options = $this->grid->getClientSideOptions();
         if (!isset($options['editable'])) { //only once
-            $this->grid->setClientSideOptions(['editable' => TRUE]);
+            $this->grid->setClientSideOptions(['editable' => true]);
             $this->grid->onRender[] = function (\Grido\Grid $grid) {
                 foreach ($grid->getComponent(Column::ID)->getComponents() as $column) {
                     if (!$column instanceof Editable || !$column->isEditable()) {
@@ -147,17 +144,17 @@ abstract class Editable extends Column
                     $isMissing = function ($method) use ($grid) {
                         return $grid->model instanceof \Grido\DataSources\Model
                             ? !method_exists($grid->model->dataSource, $method)
-                            : TRUE;
+                            : true;
                     };
 
-                    if (($column->editableCallback === NULL && (!is_string($colDb) || strpos($colDb, '.'))) ||
-                        ($column->editableCallback === NULL && $isMissing('update'))
+                    if (($column->editableCallback === null && (!is_string($colDb) || strpos($colDb, '.'))) ||
+                        ($column->editableCallback === null && $isMissing('update'))
                     ) {
                         $msg = "Column '$colName' has error: You must define callback via setEditableCallback().";
                         throw new Exception($msg);
                     }
 
-                    if ($column->editableRowCallback === NULL && $column->customRender && $isMissing('getRow')) {
+                    if ($column->editableRowCallback === null && $column->customRender && $isMissing('getRow')) {
                         $msg = "Column '$colName' has error: You must define callback via setEditableRowCallback().";
                         throw new Exception($msg);
                     }
@@ -166,13 +163,14 @@ abstract class Editable extends Column
         }
     }
 
+
     /**********************************************************************************************/
+
 
     /**
      * Returns header cell prototype (<th> html tag).
-     * @return \Nette\Utils\Html
      */
-    public function getHeaderPrototype()
+    public function getHeaderPrototype(): Html
     {
         $th = parent::getHeaderPrototype();
 
@@ -184,21 +182,20 @@ abstract class Editable extends Column
         return $th;
     }
 
+
     /**
      * Returns cell prototype (<td> html tag).
-     * @param mixed $row
-     * @return \Nette\Utils\Html
      */
-    public function getCellPrototype($row = NULL)
+    public function getCellPrototype(mixed $row = null): Html
     {
         $td = parent::getCellPrototype($row);
 
-        if ($this->isEditable() && $row !== NULL) {
+        if ($this->isEditable() && $row !== null) {
             if (!in_array('editable', $td->class)) {
                 $td->class[] = 'editable';
             }
 
-            $value = $this->editableValueCallback === NULL
+            $value = $this->editableValueCallback === null
                 ? $this->getValue($row)
                 : call_user_func_array($this->editableValueCallback, [$row, $this]);
 
@@ -208,66 +205,65 @@ abstract class Editable extends Column
         return $td;
     }
 
-    /**
-     * Returns control for editation.
-     * @returns \Nette\Forms\Controls\TextInput
-     */
-    public function getEditableControl()
+
+    public function getEditableControl(): TextInput
     {
-        if ($this->editableControl === NULL) {
-            $this->editableControl = new \Nette\Forms\Controls\TextInput;
+        if ($this->editableControl === null) {
+            $this->editableControl = new TextInput;
             $this->editableControl->controlPrototype->class[] = 'form-control';
         }
 
         return $this->editableControl;
     }
 
+
     /**
-     * @return callback
      * @internal
      */
-    public function getEditableCallback()
+    public function getEditableCallback(): callable
     {
         return $this->editableCallback;
     }
 
+
     /**
-     * @return callback
      * @internal
      */
-    public function getEditableValueCallback()
+    public function getEditableValueCallback(): callable
     {
         return $this->editableValueCallback;
     }
 
+
     /**
-     * @return callback
      * @internal
      */
-    public function getEditableRowCallback()
+    public function getEditableRowCallback(): callable
     {
         return $this->editableRowCallback;
     }
 
+
     /**
-     * @return bool
      * @internal
      */
-    public function isEditable()
+    public function isEditable(): bool
     {
         return $this->editable;
     }
 
+
     /**
-     * @return bool
      * @internal
      */
-    public function isEditableDisabled()
+    public function isEditableDisabled(): bool
     {
         return $this->editableDisabled;
     }
 
+
     /**********************************************************************************************/
+
 
     /**
      * @internal
@@ -297,6 +293,7 @@ abstract class Editable extends Column
         $response = new \Nette\Application\Responses\JsonResponse($payload);
         $this->presenter->sendResponse($response);
     }
+
 
     /**
      * @internal
