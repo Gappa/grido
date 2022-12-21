@@ -259,8 +259,6 @@ class Grid extends Components\Container
 	 */
 	public function setRememberState(bool $state = true, ?string $sectionName = null): Grid
 	{
-		$this->getPresenter(); //component must be attached to presenter
-		$this->getRememberSession(true); //start session if not
 		$this->rememberState = $state;
 		$this->rememberStateSectionName = $sectionName;
 
@@ -665,15 +663,20 @@ class Grid extends Components\Container
 	public function handleFilter(SubmitButton $button): void
 	{
 		$values = $button->form->values[Filter::ID];
-		$session = $this->rememberState // session filter
-			?
-			($this->getRememberSession(true)->params['filter'] ?? [])
-			: [];
+		// $session = $this->rememberState // session filter
+		// 	?
+		// 	($this->getRememberSession(true)->params['filter'] ?? [])
+		// 	: [];
 
 		foreach ($values as $name => $value) {
-			if (is_numeric($value) || !empty($value) || isset($this->defaultFilter[$name]) || isset($session[$name])) {
+			if (
+				is_numeric($value) // valid empty value like `0`
+				|| !empty($value)
+				|| isset($this->defaultFilter[$name])
+				// || isset($session[$name])
+			) {
 				$this->filter[$name] = $this->getFilter($name)->changeValue($value);
-			} elseif (isset($this->filter[$name])) {
+			} elseif (array_key_exists($name, $this->filter)) {
 				unset($this->filter[$name]);
 			}
 		}
