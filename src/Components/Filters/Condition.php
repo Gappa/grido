@@ -112,7 +112,7 @@ class Condition
     }
 
 
-    public function getValue(): array
+    public function getValue(): mixed // always array type except when directly set from setup 
     {
         return $this->value;
     }
@@ -195,8 +195,10 @@ class Condition
 
     public static function setupFromCallback(callable $callback, mixed $value): static
     {
+        /* $self = new self(null, null, $value);
+        // $self->value = $value; */
         $self = new self(null, null);
-        $self->value = $value;
+        $self->value = $value; // this breaks the `array` type rule
         $self->callback = $callback;
 
         return $self;
