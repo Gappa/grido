@@ -25,16 +25,47 @@ use Nette\Utils\Strings;
  *
  * @property string $mask
  */
-class DateRange extends Date
+class DateRange extends Text //Date
 {
     protected mixed $condition = 'BETWEEN ? AND ?';
 
     protected string $mask = '/(.*)\s?-\s?(.*)/';
 
+    protected string $dateFormatInput = 'd.m.Y';
+
     protected array $dateFormatOutput = ['Y-m-d', 'Y-m-d G:i:s'];
 
 
-    public function setDateFormatOutput(string $formatFrom, ?string $formatTo = null): self
+    /**
+     * Sets mask by regular expression.
+     */
+    public function setMask(string $mask): static
+    {
+        $this->mask = $mask;
+        return $this;
+    }
+
+
+    public function getMask(): string
+    {
+        return $this->mask;
+    }
+
+
+    public function setDateFormatInput(string $format): static
+    {
+        $this->dateFormatInput = $format;
+        return $this;
+    }
+
+
+    public function getDateFormatInput(): string
+    {
+        return $this->dateFormatInput;
+    }
+
+
+    public function setDateFormatOutput(string $formatFrom, ?string $formatTo = null): static
     {
         $formatTo = $formatTo === null
             ? $formatFrom
@@ -45,19 +76,9 @@ class DateRange extends Date
     }
 
 
-    /**
-     * Sets mask by regular expression.
-     */
-    public function setMask(string $mask): self
+    public function getDateFormatOutput(): array
     {
-        $this->mask = $mask;
-        return $this;
-    }
-
-
-    public function getMask(): string
-    {
-        return $this->mask;
+        return $this->dateFormatOutput;
     }
 
 
