@@ -105,7 +105,7 @@ class Grid extends Components\Container
 
 	protected array $defaultSort = [];
 
-	protected IDataSource $model;
+	protected IDataSource|DataSources\Model $model;
 
 	// total count of items
 	protected ?int $count = null;
