@@ -26,10 +26,10 @@ use Nette\Utils\Html;
  * @author      Jakub Kopřiva <kopriva.jakub@gmail.com>
  * @author      Petr Bugyík
  *
- * @property Control $editableControl
- * @property callable $editableCallback
- * @property callable $editableValueCallback
- * @property callable $editableRowCallback
+ * @property ?Control $editableControl
+ * @property ?callable $editableCallback
+ * @property ?callable $editableValueCallback
+ * @property ?callable $editableRowCallback
  * @property bool $editable
  * @property bool $editableDisabled
  */
@@ -40,16 +40,16 @@ abstract class Editable extends Column
     protected bool $editableDisabled = false;
 
     // Custom control for inline editing
-    protected Control $editableControl;
+    protected ?Control $editableControl = null;
 
-    /** @var callable for custom handling with edited data; function($id, $newValue, $oldValue, Editable $column) {} */
-    protected $editableCallback;
+    /** @var ?callable for custom handling with edited data; function($id, $newValue, $oldValue, Editable $column) {} */
+    protected $editableCallback = null;
 
-    /** @var callable for custom value; function($row, Columns\Editable $column) {} */
-    protected $editableValueCallback;
+    /** @var ?callable for custom value; function($row, Columns\Editable $column) {} */
+    protected $editableValueCallback = null;
 
-    /** @var callable for getting row; function($row, Columns\Editable $column) {} */
-    protected $editableRowCallback;
+    /** @var ?callable for getting row; function($row, Columns\Editable $column) {} */
+    protected $editableRowCallback = null;
 
 
     /**
@@ -206,7 +206,7 @@ abstract class Editable extends Column
     }
 
 
-    public function getEditableControl(): TextInput
+    public function getEditableControl(): TextInput|Control
     {
         if ($this->editableControl === null) {
             $this->editableControl = new TextInput;
@@ -220,7 +220,7 @@ abstract class Editable extends Column
     /**
      * @internal
      */
-    public function getEditableCallback(): callable
+    public function getEditableCallback(): ?callable
     {
         return $this->editableCallback;
     }
@@ -229,7 +229,7 @@ abstract class Editable extends Column
     /**
      * @internal
      */
-    public function getEditableValueCallback(): callable
+    public function getEditableValueCallback(): ?callable
     {
         return $this->editableValueCallback;
     }
@@ -238,7 +238,7 @@ abstract class Editable extends Column
     /**
      * @internal
      */
-    public function getEditableRowCallback(): callable
+    public function getEditableRowCallback(): ?callable
     {
         return $this->editableRowCallback;
     }
