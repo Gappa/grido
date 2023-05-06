@@ -37,7 +37,7 @@
 		<tr n:if="!empty($sums)">
 			<td n:foreach="$columns as $column">
 				{ifset $sums[$column->name]}
-					&sum; {$column->renderSum($sums[$column->name] / 100)}
+					&sum; {$column->renderSum($sums[$column->name])}
 				{/ifset}
 			</td>
 		</tr>

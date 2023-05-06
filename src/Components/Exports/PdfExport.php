@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Grido\Components\Exports;
 
+use Ciki\Grido\ColumnNumber;
+use Contributte\PdfResponse\PdfResponse;
 use Grido\Components\Columns\Column;
 use Nette\Http\IResponse;
+use Nette\Utils\ArrayHash;
 
 class PdfExport extends BaseExport
 {
@@ -34,13 +37,13 @@ class PdfExport extends BaseExport
 
 				foreach ($columns as $columnName => $column) {
 					$row[$columnName] = $this->customData ? $column : $column->renderExport($items);
-					if ($column instanceof \Ciki\Grido\ColumnNumber && $column->getCalculateSum()) {
+
+					if ($column instanceof ColumnNumber && $column->getCalculateSum()) {
 						if (!isset($sums[$columnName])) {
 							$sums[$columnName] = 0;
 						}
 						// dump($row[$columnName], $column->getValueForSumCalculation($items), $column->getValue($items));
-						// $sums[$columnName] += $column->getValueForSumCalculation($items);
-						$sums[$columnName] += $row[$columnName] * 100; // => cents
+						$sums[$columnName] += $column->getValueForSumCalculation($items);
 					}
 				}
 				$formattedData[] = $row;
@@ -52,18 +55,18 @@ class PdfExport extends BaseExport
 		$template = $this->getPresenter()->getTemplate();
 		$template->setFile(__DIR__ . '/pdf_export.latte');
 		$template->header = $header;
-		$template->data = \Nette\Utils\ArrayHash::from($formattedData);
-		$template->sums = \Nette\Utils\ArrayHash::from($sums);
+		$template->data = ArrayHash::from($formattedData);
+		$template->sums = ArrayHash::from($sums);
 		$template->columns = $columns;
-		// dump($header, $row, $data, $columns, $template->data, $sums);die;
+		// dumpe($header, $data, $columns, $template->data, $sums);
 		// \Utils\Basic::downloadFile(null, 'test.html', false, $template->renderToString());
 
-		$pdf = new \Joseki\Application\Responses\PdfResponse($template);
+		$pdf = new PdfResponse($template);
 
 		// optional
 		// $pdf->documentTitle = date("Y-m-d H:i") . " PDF export"; // creates filename
 		$pdf->pageFormat = $this->options['pageFormat'] ?? count($columns) > 5 ? 'A4-L' : 'A4';
-		$mpdf = $pdf->getMPDF();
+		// $mpdf = $pdf->getMPDF();
 		// Memory optim https://mpdf.github.io/troubleshooting/memory-problems.html
 		// https://mpdf.github.io/reference/mpdf-variables/simpletables.html
 		// $mpdf->simpleTables = true;
