@@ -45,13 +45,13 @@ class Doctrine implements IDataSource
     protected $qb;
 
     // Map column to the query builder
-    protected array $filterMapping;
+    protected ?array $filterMapping = null;
 
     // Map column to the query builder
-    protected array $sortMapping;
+    protected ?array $sortMapping = null;
 
     // use OutputWalker in Doctrine Paginator
-    protected bool $useOutputWalkers;
+    protected ?bool $useOutputWalkers = null;
 
     // fetch join collection in Doctrine Paginator
     protected bool $fetchJoinCollection = true;
