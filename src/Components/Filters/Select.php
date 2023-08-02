@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Grido\Components\Filters;
 
-use Ciki\Forms\Controls\MultiSelectBox;
-use Ciki\Forms\Controls\SelectBox;
 use Grido\Grid;
+use Nette\Forms\Controls\MultiSelectBox;
+use Nette\Forms\Controls\SelectBox;
 
 /**
  * Select box filter.
@@ -30,7 +30,7 @@ class Select extends Filter
 
 
     /**
-     * @param array $items for select
+     * @param array|null $items for select
      */
     public function __construct(Grid $grid, string $name, string $label, array $items = null, bool $multiple = false)
     {
