@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (https://github.com/o5/grido)
  *
@@ -10,6 +12,9 @@
  */
 
 namespace Grido\Components\Actions;
+
+use Grido\Grid;
+use Nette\Utils\Html;
 
 /**
  * Href action.
@@ -24,23 +29,21 @@ namespace Grido\Components\Actions;
  */
 class Href extends Action
 {
-    /** @var string first param for method $presenter->link() */
-    protected $destination;
+    // first param for method $presenter->link()
+    protected ?string $destination = null;
 
-    /** @var array second param for method $presenter->link() */
-    protected $arguments = [];
+    // second param for method $presenter->link()
+    protected array $arguments = [];
 
-    /** @var callback for custom href attribute creating */
-    protected $customHref;
+    /** @var ?callable for custom href attribute creating */
+    protected $customHref = null;
+
 
     /**
-     * @param \Grido\Grid $grid
-     * @param string $name
-     * @param string $label
      * @param string $destination - first param for method $presenter->link()
      * @param array $arguments - second param for method $presenter->link()
      */
-    public function __construct($grid, $name, $label, $destination = NULL, array $arguments = [])
+    public function __construct(Grid $grid, string $name, string $label, ?string $destination = null, array $arguments = [])
     {
         parent::__construct($grid, $name, $label);
 
@@ -48,25 +51,20 @@ class Href extends Action
         $this->arguments = $arguments;
     }
 
-    /**
-     * Sets callback for custom link creating.
-     * @param callable $callback
-     * @return Href
-     */
-    public function setCustomHref($callback)
+    public function setCustomHref(callable $callback): static
     {
         $this->customHref = $callback;
         return $this;
     }
 
+
     /**********************************************************************************************/
 
+
     /**
-     * @param mixed $row
-     * @return \Nette\Utils\Html
      * @internal
      */
-    public function getElement($row)
+    public function getElement(mixed $row): Html
     {
         $element = parent::getElement($row);
 
@@ -85,24 +83,24 @@ class Href extends Action
         return $element;
     }
 
+
     /**
-     * @return string
      * @internal
      */
-    public function getDestination()
+    public function getDestination(): string
     {
-        if ($this->destination === NULL) {
+        if ($this->destination === null) {
             $this->destination = $this->getName();
         }
 
         return $this->destination;
     }
 
+
     /**
-     * @return array
      * @internal
      */
-    public function getArguments()
+    public function getArguments(): array
     {
         return $this->arguments;
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (https://github.com/o5/grido)
  *
@@ -19,21 +21,15 @@ namespace Grido;
  */
 class Helpers
 {
-    /**
-     * @param string $name
-     * @return string
-     */
-    public static function formatColumnName($name)
-    {
-        return str_replace('.', '__', $name);
-    }
 
-    /**
-     * @param string $name
-     * @return string
-     */
-    public static function unformatColumnName($name)
-    {
-        return str_replace('__', '.', $name);
-    }
+	public static function formatColumnName(string $name): string
+	{
+		return str_replace('.', '__', $name);
+	}
+
+
+	public static function unformatColumnName(string $name): string
+	{
+		return str_replace('__', '.', $name);
+	}
 }

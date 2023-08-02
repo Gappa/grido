@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * This file is part of the Grido (https://github.com/o5/grido)
+ * This file is part of the Grido (http://grido.bugyik.cz)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -10,6 +12,8 @@
  */
 
 namespace Grido\Components;
+
+use Grido\Grid;
 
 /**
  * Paginating grid.
@@ -22,82 +26,63 @@ namespace Grido\Components;
  * @property-read array $steps
  * @property-read int $countEnd
  * @property-read int $countBegin
- * @property-write \Grido\Grid $grid
+ * @property-write Grid $grid
  */
 class Paginator extends \Nette\Utils\Paginator
 {
     const DEFAULT_STEP_COUNT = 4;
     const DEFAULT_STEP_RANGE = 3;
 
-    /** @var int */
-    protected $page;
 
-    /** @var array */
-    protected $steps = [];
+    protected ?int $page = null;
 
-    /** @var int */
-    protected $countBegin;
+    protected array $steps = [];
 
-    /** @var int */
-    protected $countEnd;
+    protected ?int $countBegin = null;
 
-    /** @var \Grido\Grid */
-    protected $grid;
+    protected ?int $countEnd = null;
 
-    /** @var int */
-    private $stepCount = self::DEFAULT_STEP_COUNT;
+    protected Grid $grid;
 
-    /** @var int */
-    private $stepRange = self::DEFAULT_STEP_RANGE;
+    private int $stepCount = self::DEFAULT_STEP_COUNT;
 
-    /**
-     * @param \Grido\Grid $grid
-     * @return Paginator
-     */
-    public function setGrid(\Grido\Grid $grid)
+    private int $stepRange = self::DEFAULT_STEP_RANGE;
+
+
+    public function setGrid(Grid $grid): Paginator
     {
         $this->grid = $grid;
         return $this;
     }
 
-    /**
-     * @param int $stepRange
-     * @return Paginator
-     */
-    public function setStepRange($stepRange)
+
+    public function setStepRange(int $stepRange): Paginator
     {
         $this->stepRange = $stepRange;
         return $this;
     }
 
-    /**
-     * @param int $stepCount
-     * @return Paginator
-     */
-    public function setStepCount($stepCount)
+
+    public function setStepCount(int $stepCount): Paginator
     {
-        $this->stepCount = (int) $stepCount;
+        $this->stepCount = $stepCount;
         return $this;
     }
 
-    /**********************************************************************************************/
 
-    /**
-     * @return int
-     */
+    /*	 * ******************************************************************************************* */
+
     public function getPage(): int
     {
-        if ($this->page === NULL) {
+        if ($this->page === null) {
             $this->page = parent::getPage();
         }
 
         return $this->page;
     }
 
-    /**
-     * @return array
-     */
-    public function getSteps()
+
+    public function getSteps(): array
     {
         if (empty($this->steps)) {
             $arr = range(
@@ -118,27 +103,21 @@ class Paginator extends \Nette\Utils\Paginator
         return $this->steps;
     }
 
-    /**
-     * @return int
-     */
-    public function getCountBegin()
+
+    public function getCountBegin(): int
     {
-        if ($this->countBegin === NULL) {
+        if ($this->countBegin === null) {
             $this->countBegin = $this->grid->getCount() > 0 ? $this->getOffset() + 1 : 0;
         }
 
         return $this->countBegin;
     }
 
-    /**
-     * @return int
-     */
-    public function getCountEnd()
+
+    public function getCountEnd(): int
     {
-        if ($this->countEnd === NULL) {
-            $this->countEnd = $this->grid->getCount() > 0
-                ? min($this->grid->getCount(), $this->getPage() * $this->grid->getPerPage())
-                : 0;
+        if ($this->countEnd === null) {
+            $this->countEnd = $this->grid->getCount() > 0 ? min($this->grid->getCount(), $this->getPage() * $this->grid->getPerPage()) : 0;
         }
 
         return $this->countEnd;

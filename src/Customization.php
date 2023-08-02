@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (https://github.com/o5/grido)
  *
@@ -12,7 +14,7 @@
 namespace Grido;
 
 use Nette;
-use Grido\Grid;
+use DirectoryIterator;
 
 /**
  * Customization.
@@ -29,112 +31,87 @@ class Customization
 
     use Nette\SmartObject;
 
-    const TEMPLATE_DEFAULT = 'default';
-    const TEMPLATE_BOOTSTRAP = 'bootstrap';
+	use Nette\SmartObject;
+	const TEMPLATE_DEFAULT = 'default';
+	const TEMPLATE_BOOTSTRAP = 'bootstrap';
 
-    /** @var Grid */
-    protected $grid;
 
-    /** @var string|array */
-    protected $buttonClass;
+	protected Grid $grid;
 
-    /** @var string|array */
-    protected $iconClass;
+	protected string|array $buttonClass;
 
-    /** @var array */
-    protected $templateFiles = [];
+	protected string|array $iconClass;
 
-    /**
-     * @param Grid $grid
-     */
-    public function __construct(Grid $grid)
-    {
-        $this->grid = $grid;
-    }
+	protected array $templateFiles = [];
 
-    /**
-     * @param string|array $class
-     * @return \Grido\Customization
-     */
-    public function setButtonClass($class)
-    {
-        $this->buttonClass = $class;
-        return $this;
-    }
 
-    /**
-     * @param string|array $class
-     * @return \Grido\Customization
-     */
-    public function setIconClass($class)
-    {
-        $this->iconClass = $class;
-        return $this;
-    }
+	public function __construct(Grid $grid)
+	{
+		$this->grid = $grid;
+	}
 
-    /**
-     * @return string
-     */
-    public function getButtonClass()
-    {
-        return is_array($this->buttonClass)
-            ? implode(' ', $this->buttonClass)
-            : $this->buttonClass;
-    }
 
-    /**
-     * @param string $icon
-     * @return string
-     */
-    public function getIconClass($icon = NULL)
-    {
-        if ($icon === NULL) {
-            $class = $this->iconClass;
-        } else {
-            $this->iconClass = (array) $this->iconClass;
-            $classes = [];
-            foreach ($this->iconClass as $fontClass) {
-                $classes[] = "{$fontClass} {$fontClass}-{$icon}";
-            }
-            $class = implode(' ', $classes);
-        }
+	public function setButtonClass(string|array $class): static
+	{
+		$this->buttonClass = $class;
+		return $this;
+	}
 
-        return $class;
-    }
 
-    /**
-     * @return array
-     */
-    public function getTemplateFiles()
-    {
-        if (empty($this->templateFiles)) {
-            foreach (new \DirectoryIterator(__DIR__ . '/templates') as $file) {
-                if ($file->isFile()) {
-                    $this->templateFiles[$file->getBasename('.latte')] = realpath($file->getPathname());
-                }
-            }
-        }
+	public function setIconClass(string|array $class): static
+	{
+		$this->iconClass = $class;
+		return $this;
+	}
 
-        return $this->templateFiles;
-    }
 
-    /**
-     * Default theme.
-     * @return \Grido\Customization
-     */
-    public function useTemplateDefault()
-    {
-        $this->grid->setTemplateFile($this->getTemplateFiles()[self::TEMPLATE_DEFAULT]);
-        return $this;
-    }
+	public function getButtonClass(): string
+	{
+		return is_array($this->buttonClass) ? implode(' ', $this->buttonClass) : $this->buttonClass;
+	}
 
-    /**
-     * Twitter Bootstrap theme.
-     * @return \Grido\Customization
-     */
-    public function useTemplateBootstrap()
-    {
-        $this->grid->setTemplateFile($this->getTemplateFiles()[self::TEMPLATE_BOOTSTRAP]);
-        return $this;
-    }
+
+	public function getIconClass(string $icon = null): string
+	{
+		if ($icon === null) {
+			$class = $this->iconClass;
+		} else {
+			$this->iconClass = (array) $this->iconClass;
+			$classes = [];
+			foreach ($this->iconClass as $fontClass) {
+				$classes[] = "{$fontClass} {$fontClass}-{$icon}";
+			}
+			$class = implode(' ', $classes);
+		}
+
+		return $class;
+	}
+
+
+	public function getTemplateFiles(): array
+	{
+		if (empty($this->templateFiles)) {
+			foreach (new DirectoryIterator(__DIR__ . '/templates') as $file) {
+				if ($file->isFile()) {
+					$this->templateFiles[$file->getBasename('.latte')] = realpath($file->getPathname());
+				}
+			}
+		}
+
+		return $this->templateFiles;
+	}
+
+
+	public function useTemplateDefault(): static
+	{
+		$this->grid->setTemplateFile($this->getTemplateFiles()[self::TEMPLATE_DEFAULT]);
+		return $this;
+	}
+
+
+	public function useTemplateBootstrap(): static
+	{
+		$this->grid->setTemplateFile($this->getTemplateFiles()[self::TEMPLATE_BOOTSTRAP]);
+		return $this;
+	}
 }

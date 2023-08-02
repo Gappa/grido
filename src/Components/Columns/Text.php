@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (https://github.com/o5/grido)
  *
@@ -11,6 +13,8 @@
 
 namespace Grido\Components\Columns;
 
+use Closure;
+
 /**
  * Text column.
  *
@@ -20,28 +24,23 @@ namespace Grido\Components\Columns;
  */
 class Text extends Editable
 {
-    /** @var \Closure */
-    protected $truncate;
+    protected ?Closure $truncate = null;
 
     /**
      * @param string $maxLen UTF-8 encoding
      * @param string $append UTF-8 encoding
-     * @return Column
      */
-    public function setTruncate($maxLen, $append = "\xE2\x80\xA6")
+    public function setTruncate(string $maxLen, string $append = "\xE2\x80\xA6"): Column
     {
-        $this->truncate = function($string) use ($maxLen, $append) {
+        $this->truncate = function ($string) use ($maxLen, $append) {
             return \Nette\Utils\Strings::truncate($string, $maxLen, $append);
         };
 
         return $this;
     }
 
-    /**
-     * @param mixed $value
-     * @return mixed
-     */
-    protected function formatValue($value)
+
+    protected function formatValue(mixed $value): mixed
     {
         $value = parent::formatValue($value);
 

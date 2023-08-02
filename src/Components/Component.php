@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (https://github.com/o5/grido)
  *
@@ -11,6 +13,10 @@
 
 namespace Grido\Components;
 
+use Grido\Grid;
+use Nette\Application\UI\Form;
+use Nette\ComponentModel\Container;
+
 /**
  * Base of grid components.
  *
@@ -20,85 +26,70 @@ namespace Grido\Components;
  *
  * @property-read string $label
  * @property-read string $type
- * @property-read \Grido\Grid $grid
- * @property-read \Nette\Application\UI\Form $form
+ * @property-read Grid $grid
+ * @property-read Form $form
  */
-abstract class Component extends \Nette\Application\UI\PresenterComponent
+abstract class Component extends \Nette\Application\UI\Component
 {
-    /** @var string */
-    protected $label;
+    protected string $label;
 
-    /** @var string */
-    protected $type;
+    protected string $type;
 
-    /** @var \Grido\Grid */
-    protected $grid;
+    protected Grid $grid;
 
-    /** @var \Nette\Application\UI\Form */
-    protected $form;
+    protected ?Form $form = null;
 
-    /**
-     * @return \Grido\Grid
-     */
-    public function getGrid()
+
+    public function getGrid(): Grid
     {
         return $this->grid;
     }
 
-    /**
-     * @return \Nette\Application\UI\Form
-     */
-    public function getForm()
+
+    public function getForm(): Form
     {
-        if ($this->form === NULL) {
+        if ($this->form === null) {
             $this->form = $this->grid->getComponent('form');
         }
 
         return $this->form;
     }
 
+
     /**
-     * @return string
      * @internal
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return $this->label;
     }
 
+
     /**
-     * @return string
      * @internal
      */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * @param \Grido\Grid $grid
-     * @param string $name
-     * @return \Nette\ComponentModel\Container
-     */
-    protected function addComponentToGrid($grid, $name)
+
+    protected function addComponentToGrid(Grid $grid, string $name): Container
     {
         $this->grid = $grid;
 
-        //check container exist
-        $container = $this->grid->getComponent($this::ID, FALSE);
+        // check container exist
+        $container = $this->grid->getComponent($this::ID, false);
         if (!$container) {
-            $this->grid->addComponent(new \Nette\ComponentModel\Container, $this::ID);
+            $this->grid->addComponent(new Container, $this::ID);
             $container = $this->grid->getComponent($this::ID);
         }
 
         return $container->addComponent($this, $name);
     }
 
-    /**
-     * @param  string $message
-     * @return string
-     */
-    protected function translate($message)
+
+    protected function translate(string $message): string
     {
         return call_user_func_array([$this->grid->getTranslator(), "translate"], func_get_args());
     }

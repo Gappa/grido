@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (https://github.com/o5/grido)
  *
@@ -13,6 +15,7 @@ namespace Grido\Components\Actions;
 
 use Grido\Grid;
 use Grido\Exception;
+use Nette\Utils\Html;
 
 /**
  * Event action.
@@ -22,27 +25,24 @@ use Grido\Exception;
  * @author      Josef Kříž <pepakriz@gmail.com>
  * @author      Petr Bugyík
  *
- * @property callable $onClick function($id, Grido\Components\Actions\Event $event)
+ * @property callable $onClick function($id, Event $event)
  */
 class Event extends Action
 {
-    /** @var callable function($id, Grido\Components\Actions\Event $event) */
+    /** @var callable function($id, Event $event) */
     private $onClick;
 
+
     /**
-     * @param \Grido\Grid $grid
-     * @param string $name
-     * @param string $label
-     * @param callable $onClick
      * @throws Exception
      */
-    public function __construct($grid, $name, $label, $onClick = NULL)
+    public function __construct(Grid $grid, string $name, string $label, ?callable $onClick = null)
     {
         parent::__construct($grid, $name, $label);
 
-        if ($onClick === NULL) {
-            $grid->onRender[] = function(Grid $grid) {
-                if ($this->onClick === NULL) {
+        if ($onClick === null) {
+            $grid->onRender[] = function (Grid $grid) {
+                if ($this->onClick === null) {
                     throw new Exception("Callback onClick in action '{$this->name}' must be set.");
                 }
             };
@@ -51,34 +51,30 @@ class Event extends Action
         }
     }
 
+
     /**
-     * Sets on-click handler.
-     * @param callable $onClick function($id, Grido\Components\Actions\Event $event)
-     * @return \Grido\Components\Actions\Event
+     * @param callable $onClick function($id, Event $event)
      */
-    public function setOnClick(callable $onClick)
+    public function setOnClick(callable $onClick): static
     {
         $this->onClick = $onClick;
         return $this;
     }
 
-    /**
-     * Returns on-click handler.
-     * @return callable
-     */
-    public function getOnClick()
+
+    public function getOnClick(): callable
     {
         return $this->onClick;
     }
 
+
     /**********************************************************************************************/
 
+
     /**
-     * @param mixed $row
-     * @return \Nette\Utils\Html
      * @internal
      */
-    public function getElement($row)
+    public function getElement(mixed $row): Html
     {
         $element = parent::getElement($row);
 
@@ -88,13 +84,14 @@ class Event extends Action
         return $element;
     }
 
+
     /**********************************************************************************************/
 
+
     /**
-     * @param int $id
      * @internal
      */
-    public function handleClick($id)
+    public function handleClick(int $id)
     {
         call_user_func_array($this->onClick, [$id, $this]);
     }

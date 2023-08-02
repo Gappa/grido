@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * This file is part of the Grido (https://github.com/o5/grido)
+ * This file is part of the Grido (http://grido.bugyik.cz)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -11,10 +13,10 @@
 
 namespace Grido\Components;
 
+use Grido\Exception;
 use Grido\Grid;
 use Grido\Helpers;
-use Grido\Exception;
-use Nette\Forms\Controls\SubmitButton;
+use Nette\Forms\Container;
 
 /**
  * Operation with one or more rows.
@@ -30,18 +32,14 @@ class Operation extends Component
 {
     const ID = 'operations';
 
-    /** @var array callback on operation submit */
-    public $onSubmit;
 
-    /** @var string */
-    protected $primaryKey;
+    // callback on operation submit
+    public array $onSubmit;
 
-    /**
-     * @param \Grido\Grid $grid
-     * @param array $operations
-     * @param callback $onSubmit - callback after operation submit
-     */
-    public function __construct($grid, array $operations, $onSubmit)
+    protected string $primaryKey;
+
+
+    public function __construct(Grid $grid, array $operations, callable $onSubmit)
     {
         $this->grid = $grid;
         $grid->addComponent($this, self::ID);
@@ -53,63 +51,56 @@ class Operation extends Component
             ->addSelect(self::ID, 'Selected', $operations)
             ->setPrompt('Grido.Selected');
 
-        $grid->onRender[] = function(Grid $grid) {
+        $grid->onRender[] = function (Grid $grid) {
             $this->addCheckers($grid['form'][Operation::ID]);
         };
 
         $this->onSubmit[] = $onSubmit;
     }
 
+
     /**
-     * Sets client side confirm for operation.
-     * @param string $operation
-     * @param string $message
-     * @return Operation
+     * Set client side confirm for operation.
      */
-    public function setConfirm($operation, $message)
+    public function setConfirm(string $operation, string $message): Operation
     {
         $message = $this->translate($message);
-        $this->grid->onRender[] = function(Grid $grid) use ($operation, $message) {
+        $this->grid->onRender[] = function (Grid $grid) use ($operation, $message) {
             $grid['form'][Operation::ID][Operation::ID]->getControlPrototype()->setAttribute(
-                "data-grido-confirm-$operation", $message
+                "data-grido-confirm-$operation",
+                $message
             );
         };
 
         return $this;
     }
 
-    /**
-     * Sets primary key.
-     * @param string $primaryKey
-     * @return Operation
-     */
-    public function setPrimaryKey($primaryKey)
+
+    public function setPrimaryKey(string $primaryKey): Operation
     {
         $this->primaryKey = $primaryKey;
         return $this;
     }
 
-    /**********************************************************************************************/
 
-    /**
-     * @return string
-     */
-    public function getPrimaryKey()
+    /*	 * ******************************************************************************************* */
+
+    public function getPrimaryKey(): string
     {
-        if ($this->primaryKey === NULL) {
+        if ($this->primaryKey === null) {
             $this->primaryKey = $this->grid->primaryKey;
         }
 
         return $this->primaryKey;
     }
 
-    /**********************************************************************************************/
+
+    /*	 * ******************************************************************************************* */
 
     /**
-     * @param SubmitButton $button
      * @internal
      */
-    public function handleOperations(SubmitButton $button)
+    public function handleOperations(\Nette\Forms\Controls\SubmitButton $button): void
     {
         $grid = $this->getGrid();
         !empty($grid->onRegistered) && $grid->onRegistered($grid);
@@ -132,7 +123,7 @@ class Operation extends Component
 
         foreach ($values as $key => $val) {
             if ($val) {
-                $ids[] = (string) $key;
+                $ids[] = $key;
             }
         }
 
@@ -140,21 +131,21 @@ class Operation extends Component
         $grid->page = 1;
 
         if ($this->presenter->isAjax()) {
-            $grid['form'][self::ID][self::ID]->setValue(NULL);
-            $grid->getData(TRUE, FALSE);
+            $grid['form'][self::ID][self::ID]->setValue(null);
+            $grid->getData(true, false);
         }
 
         $grid->reload();
     }
 
+
     /**
-     * @param \Nette\Forms\Container $container
      * @throws Exception
      * @internal
      */
-    public function addCheckers(\Nette\Forms\Container $container)
+    public function addCheckers(Container $container): void
     {
-        $items = $this->grid->getData(null, FALSE);
+        $items = $this->grid->getData();
         $primaryKey = $this->getPrimaryKey();
 
         foreach ($items as $item) {
@@ -166,7 +157,7 @@ class Operation extends Component
                 }
             } catch (\Exception $e) {
                 throw new Exception(
-                    'You should define some else primary key via $grid->setPrimaryKey() '.
+                    'You should define some else primary key via $grid->setPrimaryKey() ' .
                     "because currently defined '$primaryKey' key is not suitable for operation feature."
                 );
             }

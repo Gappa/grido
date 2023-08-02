@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (https://github.com/o5/grido)
  *
@@ -10,6 +12,9 @@
  */
 
 namespace Grido\Components\Columns;
+
+use Grido\Grid;
+use Utils\Strings;
 
 /**
  * Number column.
@@ -22,79 +27,96 @@ namespace Grido\Components\Columns;
  */
 class Number extends Editable
 {
-    /** @var array */
-    protected $numberFormat = [
-        self::NUMBER_FORMAT_DECIMALS => 0,
-        self::NUMBER_FORMAT_DECIMAL_POINT => '.',
-        self::NUMBER_FORMAT_THOUSANDS_SEPARATOR => ','
-    ];
+	protected array $numberFormat = [
+		self::NUMBER_FORMAT_DECIMALS => null,
+		self::NUMBER_FORMAT_DECIMAL_POINT => '.',
+		self::NUMBER_FORMAT_THOUSANDS_SEPARATOR => ',',
+		self::NUMBER_FORMAT_DECIMALS_MAX => 2,
 
-    /** @const keys of array $numberFormat */
-    const NUMBER_FORMAT_DECIMALS = 0;
-    const NUMBER_FORMAT_DECIMAL_POINT = 1;
-    const NUMBER_FORMAT_THOUSANDS_SEPARATOR = 2;
+	];
 
-    /**
-     * @param \Grido\Grid $grid
-     * @param string $name
-     * @param string $label
-     * @param int $decimals number of decimal points
-     * @param string $decPoint separator for the decimal point
-     * @param string $thousandsSep thousands separator
-     */
-    public function __construct($grid, $name, $label, $decimals = NULL, $decPoint = NULL, $thousandsSep = NULL)
-    {
-        parent::__construct($grid, $name, $label);
+	/** @const keys of array $numberFormat */
+	const NUMBER_FORMAT_DECIMALS = 0;
+	const NUMBER_FORMAT_DECIMAL_POINT = 1;
+	const NUMBER_FORMAT_THOUSANDS_SEPARATOR = 2;
+	const NUMBER_FORMAT_DECIMALS_MAX = 3;
 
-        $this->setNumberFormat($decimals, $decPoint, $thousandsSep);
-    }
+	/**
+	 * @param ?int $decimals number of decimal points
+	 * @param ?string $decPoint separator for the decimal point
+	 * @param ?string $thousandsSep thousands separator
+	 * @param ?int $decimalsMax max number of decimal points, applies if $decimals === null
+	 */
+	public function __construct(
+		Grid $grid,
+		string $name,
+		string $label,
+		?int $decimals = null,
+		?string $decPoint = null,
+		?string $thousandsSep = null,
+		?int $decimalsMax = null,
+	) {
+		parent::__construct($grid, $name, $label);
 
-    /**
-     * Sets number format. Params are same as internal function number_format().
-     * @param int $decimals number of decimal points
-     * @param string $decPoint separator for the decimal point
-     * @param string $thousandsSep thousands separator
-     * @return Number
-     */
-    public function setNumberFormat($decimals = NULL, $decPoint = NULL, $thousandsSep = NULL)
-    {
-        if ($decimals !== NULL) {
-            $this->numberFormat[self::NUMBER_FORMAT_DECIMALS] = (int) $decimals;
-        }
+		$this->setNumberFormat($decimals, $decPoint, $thousandsSep, $decimalsMax);
+	}
 
-        if ($decPoint !== NULL) {
-            $this->numberFormat[self::NUMBER_FORMAT_DECIMAL_POINT] = $decPoint;
-        }
 
-        if ($thousandsSep !== NULL) {
-            $this->numberFormat[self::NUMBER_FORMAT_THOUSANDS_SEPARATOR] = $thousandsSep;
-        }
+	/**
+	 * Sets number format. Params are similar to internal function number_format() params.
+	 * @param ?int $decimals number of decimal points
+	 * @param ?string $decPoint separator for the decimal point
+	 * @param ?string $thousandsSep thousands separator
+	 * @param ?int $decimalsMax max number of decimal points, applies if $decimals === null
+	 */
+	public function setNumberFormat(
+		?int $decimals = null,
+		?string $decPoint = null,
+		?string $thousandsSep = null,
+		?int $decimalsMax = null,
+	): static {
+		$this->numberFormat[self::NUMBER_FORMAT_DECIMALS] = $decimals;
 
-        return $this;
-    }
+		if ($decPoint !== null) {
+			$this->numberFormat[self::NUMBER_FORMAT_DECIMAL_POINT] = $decPoint;
+		}
 
-    /**
-     * @return array
-     */
-    public function getNumberFormat()
-    {
-        return $this->numberFormat;
-    }
+		if ($thousandsSep !== null) {
+			$this->numberFormat[self::NUMBER_FORMAT_THOUSANDS_SEPARATOR] = $thousandsSep;
+		}
 
-    /**
-     * @param mixed $value
-     * @return string
-     */
-    protected function formatValue($value)
-    {
-        $value = parent::formatValue($value);
+		if ($decimalsMax !== null) {
+			$this->numberFormat[self::NUMBER_FORMAT_DECIMALS_MAX] = $decimalsMax;
+		}
 
-        $decimals = $this->numberFormat[self::NUMBER_FORMAT_DECIMALS];
-        $decPoint = $this->numberFormat[self::NUMBER_FORMAT_DECIMAL_POINT];
-        $thousandsSep = $this->numberFormat[self::NUMBER_FORMAT_THOUSANDS_SEPARATOR];
+		return $this;
+	}
 
-        return is_numeric($value)
-            ? number_format($value, $decimals, $decPoint, $thousandsSep)
-            : $value;
-    }
+
+	public function getNumberFormat(): array
+	{
+		return $this->numberFormat;
+	}
+
+
+	protected function formatValue(mixed $value): mixed
+	{
+		$value = parent::formatValue($value);
+		if (!is_numeric($value)) {
+			return $value;
+		}
+
+		$decimals = $this->numberFormat[self::NUMBER_FORMAT_DECIMALS];
+		$decPoint = $this->numberFormat[self::NUMBER_FORMAT_DECIMAL_POINT];
+		$thousandsSep = $this->numberFormat[self::NUMBER_FORMAT_THOUSANDS_SEPARATOR];
+		$decimalsMax = $this->numberFormat[self::NUMBER_FORMAT_DECIMALS_MAX];
+
+		$value = (float) $value;
+		// show as many decimals as needed, max self::NUMBER_FORMAT_DECIMALS_MAX
+		if ($decimals === null) {
+			$valueStr = (string) $value;
+			$decimals = min(strlen(Strings::after($valueStr, '.', -1) ?? ''), $decimalsMax);
+		}
+		return number_format($value, $decimals, $decPoint, $thousandsSep);
+	}
 }

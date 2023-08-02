@@ -7,11 +7,11 @@
  * the file LICENSE.md that was distributed with this source code.
  *}
 
-{snippet grid}
+<div n:snippet="grid">
 
 {php
     $form->getElementPrototype()->class[] = 'ajax grido';
-    $form->getElementPrototype()->{"data-grido-refresh-handler"} = $control->link("refresh!", ['page' => NULL, 'perPage' => NULL, 'sort' => NULL, 'filter' => NULL]);
+    $form->getElementPrototype()->{"data-grido-refresh-handler"} = $control->link("refresh!", ['page' => null, 'perPage' => null, 'sort' => null, 'filter' => null]);
 
     $filterRenderType = $control->getFilterRenderType();
 
@@ -144,9 +144,12 @@
                         {/block}
                         {input $form[buttons][perPage], class => 'hide'}
                     </span>
-                    <span n:if="$control->hasExport()" class="export" n:inner-block="export">
-                        <a n:class="$customization->buttonClass" href="{=$control->getComponent(\Grido\Components\Export::ID)->link('export!')}" title="{_'Grido.ExportAllItems'}">{_'Grido.Export'}</a>
-                    </span>
+					{if $control->hasExport()}
+						<span class="export" n:inner-block="export" n:foreach="$control->getExports() as $export">
+							{var $title = $export->title ? : $template->translate('Grido.ExportAllItems')}
+							<a n:class="$customization->buttonClass" href="{=$export->link('export!')}" title="{$title}"><i class="{=$customization->getIconClass('download')}"> {_'Grido.Export'}</i></a>
+						</span>
+					{/if}
                     <span n:block="reset" class="reset">
                         {input $form[buttons][reset]}
                     </span>
@@ -158,11 +161,11 @@
         {foreach $data as $row}
             {php $checkbox = $control->hasOperation()
                     ? $form[\Grido\Components\Operation::ID][\Grido\Helpers::formatColumnName($control->getProperty($row, $control->getComponent(\Grido\Components\Operation::ID)->getPrimaryKey()))]
-                    : NULL;
+                    : null;
                 $tr = $control->getRowPrototype($row);
                 $tr->class[] = $checkbox && $checkbox->getValue()
                     ? 'selected'
-                    : NULL;
+                    : null;
             }
             {$tr->startTag()|noescape}
                 <td n:if="$checkbox" class="checker">
@@ -195,4 +198,4 @@
 {$control->getTablePrototype()->endTag()|noescape}
 {/block}
 {/form}
-{/snippet}
+</div>

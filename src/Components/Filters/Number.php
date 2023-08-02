@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (https://github.com/o5/grido)
  *
@@ -11,6 +13,8 @@
 
 namespace Grido\Components\Filters;
 
+use Nette\Forms\Controls\TextInput;
+
 /**
  * Number input filter.
  *
@@ -20,13 +24,10 @@ namespace Grido\Components\Filters;
  */
 class Number extends Text
 {
-    /** @var string */
-    protected $condition;
+    protected mixed $condition = null;
 
-    /**
-     * @return \Nette\Forms\Controls\TextInput
-     */
-    protected function getFormControl()
+
+    protected function getFormControl(): TextInput
     {
         $control = parent::getFormControl();
         $hint = 'Grido.HintNumber';
@@ -36,17 +37,16 @@ class Number extends Text
         return $control;
     }
 
+
     /**
-     * @param string $value
-     * @return Condition|bool
      * @throws \Exception
      * @internal
      */
-    public function __getCondition($value)
+    public function __getCondition(mixed $value): ?Condition
     {
         $condition = parent::__getCondition($value);
 
-        if ($condition === NULL) {
+        if ($condition === null) {
             $condition = Condition::setupEmpty();
 
             if (preg_match('/(<>|[<|>]=?)?([-0-9,|.]+)/', $value, $matches)) {

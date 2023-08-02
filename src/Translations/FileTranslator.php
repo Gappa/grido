@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (https://github.com/o5/grido)
  *
@@ -21,58 +23,44 @@ use Nette;
  * @subpackage  Translations
  * @author      Petr Bugyík
  */
-class FileTranslator implements \Nette\Localization\ITranslator
+class FileTranslator implements \Nette\Localization\Translator
 {
-    use \Nette\SmartObject;
 
-    /** @var array */
-    protected $translations = [];
+	use Nette\SmartObject;
+	protected array $translations = [];
 
-    /**
-     * @param string $lang
-     * @param array $translations
-     */
-    public function __construct($lang = 'en', array $translations = [])
-    {
-        $translations = $translations + $this->getTranslationsFromFile($lang);
-        $this->translations = $translations;
-    }
 
-    /**
-     * Sets language of translation.
-     * @param string $lang
-     */
-    public function setLang($lang)
-    {
-        $this->translations = $this->getTranslationsFromFile($lang);
-    }
+	public function __construct(string $lang = 'en', array $translations = [])
+	{
+		$translations = $translations + $this->getTranslationsFromFile($lang);
+		$this->translations = $translations;
+	}
 
-    /**
-     * @param string $lang
-     * @throws Exception
-     * @return array
-     */
-    protected function getTranslationsFromFile($lang)
-    {
-        $filename = __DIR__ . "/$lang.php";
-        if (!file_exists($filename)) {
-            throw new Exception("Translations for language '$lang' not found.");
-        }
 
-        return include ($filename);
-    }
+	public function setLang(string $lang): void
+	{
+		$this->translations = $this->getTranslationsFromFile($lang);
+	}
 
-    /************************* interface \Nette\Localization\ITranslator **************************/
 
-    /**
-     * @param string $message
-     * @param ...$parameters
-     * @return string
-     */
-    public function translate($message, ...$parameters): string
-    {
-        return isset($this->translations[$message])
-            ? $this->translations[$message]
-            : ($message ?? '');
-    }
+	/**
+	 * @throws Exception
+	 */
+	protected function getTranslationsFromFile(string $lang): array
+	{
+		$filename = __DIR__ . "/$lang.php";
+		if (!file_exists($filename)) {
+			throw new Exception("Translations for language '$lang' not found.");
+		}
+
+		return include($filename);
+	}
+
+
+	/*	 * *********************** interface \Nette\Localization\ITranslator ************************* */
+
+	public function translate($message, ...$parameters): string
+	{
+		return isset($this->translations[$message]) ? $this->translations[$message] : $message;
+	}
 }

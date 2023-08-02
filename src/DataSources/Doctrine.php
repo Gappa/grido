@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * This file is part of the Grido (https://github.com/o5/grido)
+ * This file is part of the Grido (http://grido.bugyik.cz)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -11,9 +13,10 @@
 
 namespace Grido\DataSources;
 
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Query;
 use Grido\Exception;
 use Grido\Components\Filters\Condition;
-
 use Nette\Utils\Strings;
 use Nette\Utils\Random;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -27,7 +30,7 @@ use Nette;
  * @author      Martin Jantosovic <martin.jantosovic@freya.sk>
  * @author      Petr Bugyík
  *
- * @property-read \Doctrine\ORM\QueryBuilder $qb
+ * @property-read QueryBuilder $qb
  * @property-read array $filterMapping
  * @property-read array $sortMapping
  * @property-read int $count
@@ -35,34 +38,35 @@ use Nette;
  */
 class Doctrine implements IDataSource
 {
-    use \Nette\SmartObject;
 
-    /** @var \Doctrine\ORM\QueryBuilder */
+    use Nette\SmartObject;
+
+    // QueryBuilder
     protected $qb;
 
-    /** @var array Map column to the query builder */
-    protected $filterMapping;
+    // Map column to the query builder
+    protected array $filterMapping;
 
-    /** @var array Map column to the query builder */
-    protected $sortMapping;
+    // Map column to the query builder
+    protected array $sortMapping;
 
-    /** @var bool use OutputWalker in Doctrine Paginator */
-    protected $useOutputWalkers;
+    // use OutputWalker in Doctrine Paginator
+    protected bool $useOutputWalkers;
 
-    /** @var bool fetch join collection in Doctrine Paginator */
-    protected $fetchJoinCollection = TRUE;
+    // fetch join collection in Doctrine Paginator
+    protected bool $fetchJoinCollection = true;
 
-    /** @var array */
-    protected $rand;
+    protected array $rand;
+
 
     /**
      * If $sortMapping is not set and $filterMapping is set,
      * $filterMapping will be used also as $sortMapping.
-     * @param \Doctrine\ORM\QueryBuilder $qb
+     * @param QueryBuilder $qb
      * @param array $filterMapping Maps columns to the DQL columns
      * @param array $sortMapping Maps columns to the DQL columns
      */
-    public function __construct(\Doctrine\ORM\QueryBuilder $qb, array $filterMapping = NULL, array $sortMapping = NULL)
+    public function __construct(QueryBuilder $qb, array $filterMapping = null, array $sortMapping = null)
     {
         $this->qb = $qb;
         $this->filterMapping = $filterMapping;
@@ -73,83 +77,48 @@ class Doctrine implements IDataSource
         }
     }
 
-    /**
-     * @param bool $useOutputWalkers
-     * @return \Grido\DataSources\Doctrine
-     */
-    public function setUseOutputWalkers($useOutputWalkers)
+
+    public function setUseOutputWalkers(bool $useOutputWalkers): Doctrine
     {
         $this->useOutputWalkers = $useOutputWalkers;
         return $this;
     }
 
-    /**
-     * @param bool $fetchJoinCollection
-     * @return \Grido\DataSources\Doctrine
-     */
-    public function setFetchJoinCollection($fetchJoinCollection)
+
+    public function setFetchJoinCollection(bool $fetchJoinCollection): Doctrine
     {
         $this->fetchJoinCollection = $fetchJoinCollection;
         return $this;
     }
 
-    /**
-     * @return \Doctrine\ORM\Query
-     */
-    public function getQuery()
+
+    public function getQuery(): Query
     {
-        return $this->_getQuery($this->qb);
+        return $this->qb->getQuery();
     }
 
-    /**
-     * Workaround for https://github.com/Kdyby/DoctrineCache/issues/23
-     *
-     * @param \Doctrine\ORM\QueryBuilder $qb
-     * @return \Doctrine\ORM\Query
-     */
-    private function _getQuery(\Doctrine\ORM\QueryBuilder $qb)
-    {
-        $query = $qb->getQuery();
-        $ttl = $query->getQueryCacheLifetime();
-        if (!\is_int($ttl)) {
-            $query->setQueryCacheLifetime(0);
-        }
-        return $query;
-    }
 
-    /**
-     * @return \Doctrine\ORM\QueryBuilder
-     */
-    public function getQb()
+    public function getQb(): QueryBuilder
     {
         return $this->qb;
     }
 
-    /**
-     * @return array|NULL
-     */
-    public function getFilterMapping()
+
+    public function getFilterMapping(): ?array
     {
         return $this->filterMapping;
     }
 
-    /**
-     * @return array|NULL
-     */
-    public function getSortMapping()
+
+    public function getSortMapping(): ?array
     {
         return $this->sortMapping;
     }
 
-    /**
-     * @param Condition $condition
-     * @param \Doctrine\ORM\QueryBuilder $qb
-     */
-    protected function makeWhere(Condition $condition, \Doctrine\ORM\QueryBuilder $qb = NULL)
+
+    protected function makeWhere(Condition $condition, QueryBuilder $qb = null)//: void
     {
-        $qb = $qb === NULL
-            ? $this->qb
-            : $qb;
+        $qb = $qb === null ? $this->qb : $qb;
 
         if ($condition->callback) {
             return call_user_func_array($condition->callback, [$condition->value, $qb]);
@@ -158,19 +127,15 @@ class Doctrine implements IDataSource
         $columns = $condition->column;
         foreach ($columns as $key => $column) {
             if (!Condition::isOperator($column)) {
-                $columns[$key] = (isset($this->filterMapping[$column])
-                    ? $this->filterMapping[$column]
-                    : (Strings::contains($column, ".")
-                        ? $column
-                        : current($this->qb->getRootAliases()) . '.' . $column));
+                $columns[$key] = (isset($this->filterMapping[$column]) ? $this->filterMapping[$column] : (Strings::contains($column, ".") ? $column : current($this->qb->getRootAliases()) . '.' . $column));
             }
         }
 
         $condition->setColumn($columns);
-        list($where) = $condition->__toArray(NULL, NULL, FALSE);
+        list($where) = $condition->__toArray(null, null, false);
 
         $rand = $this->getRand();
-        $where = preg_replace_callback('/\?/', function() use ($rand) {
+        $where = preg_replace_callback('/\?/', function () use ($rand) {
             static $i = -1;
             $i++;
             return ":$rand{$i}";
@@ -183,10 +148,8 @@ class Doctrine implements IDataSource
         }
     }
 
-    /**
-     * @return string
-     */
-    protected function getRand()
+
+    protected function getRand(): string
     {
         do {
             $rand = Random::generate(4, 'a-z');
@@ -196,12 +159,10 @@ class Doctrine implements IDataSource
         return $rand;
     }
 
-    /*********************************** interface IDataSource ************************************/
 
-    /**
-     * @return int
-     */
-    public function getCount()
+    /*	 * ********************************* interface IDataSource *********************************** */
+
+    public function getCount(): int
     {
         $paginator = new Paginator($this->getQuery(), $this->fetchJoinCollection);
         $paginator->setUseOutputWalkers($this->useOutputWalkers);
@@ -209,84 +170,63 @@ class Doctrine implements IDataSource
         return $paginator->count();
     }
 
+
     /**
      * It is possible to use query builder with additional columns.
      * In this case, only item at index [0] is returned, because
      * it should be an entity object.
-     * @return array
      */
-    public function getData()
+    public function getData(): array
     {
         $data = [];
 
         // Paginator is better if the query uses ManyToMany associations
-        $result = $this->qb->getMaxResults() !== NULL || $this->qb->getFirstResult() !== NULL
-            ? new Paginator($this->getQuery())
-            : $this->getQuery()->getResult();
+        $result = $this->qb->getMaxResults() !== null || $this->qb->getFirstResult() !== null ? new Paginator($this->getQuery()) : $this->qb->getQuery()->getResult();
 
         foreach ($result as $item) {
             // Return only entity itself
-            $data[] = is_array($item)
-                ? $item[0]
-                : $item;
+            $data[] = is_array($item) ? $item[0] : $item;
         }
 
         return $data;
     }
 
-    /**
-     * Sets filter.
-     * @param array $conditions
-     */
-    public function filter(array $conditions)
+
+    public function filter(array $conditions): void
     {
         foreach ($conditions as $condition) {
             $this->makeWhere($condition);
         }
     }
 
-    /**
-     * Sets offset and limit.
-     * @param int $offset
-     * @param int $limit
-     */
-    public function limit($offset, $limit)
+
+    public function limit(int $offset, int $limit): void
     {
         $this->qb->setFirstResult($offset)
             ->setMaxResults($limit);
     }
 
-    /**
-     * Sets sorting.
-     * @param array $sorting
-     */
-    public function sort(array $sorting)
+
+    public function sort(array $sorting): void
     {
         foreach ($sorting as $key => $value) {
-            $column = isset($this->sortMapping[$key])
-                ? $this->sortMapping[$key]
-                : current($this->qb->getRootAliases()) . '.' . $key;
+            $column = isset($this->sortMapping[$key]) ? $this->sortMapping[$key] : current($this->qb->getRootAliases()) . '.' . $key;
 
             $this->qb->addOrderBy($column, $value);
         }
     }
 
+
     /**
-     * @param mixed $column
-     * @param array $conditions
-     * @param int $limit
-     * @return array
      * @throws Exception
      */
-    public function suggest($column, array $conditions, $limit)
+    public function suggest(mixed $column, array $conditions, int $limit): array
     {
         $qb = clone $this->qb;
         $qb->setMaxResults($limit);
 
         if (is_string($column)) {
-            $mapping = isset($this->filterMapping[$column])
-                ? $this->filterMapping[$column]
-                : current($qb->getRootAliases()) . '.' . $column;
+            $mapping = isset($this->filterMapping[$column]) ? $this->filterMapping[$column] : current($qb->getRootAliases()) . '.' . $column;
 
             $qb->select($mapping)->distinct()->orderBy($mapping);
         }
@@ -296,7 +236,7 @@ class Doctrine implements IDataSource
         }
 
         $items = [];
-        $data = $this->_getQuery($qb)->getScalarResult();
+        $data = $qb->getQuery()->getScalarResult();
         foreach ($data as $row) {
             if (is_string($column)) {
                 $value = (string) current($row);

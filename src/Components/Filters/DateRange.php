@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (https://github.com/o5/grido)
  *
@@ -11,6 +13,7 @@
 
 namespace Grido\Components\Filters;
 
+use Nette\Forms\Controls\TextInput;
 use Nette\Utils\Strings;
 
 /**
@@ -22,25 +25,49 @@ use Nette\Utils\Strings;
  *
  * @property string $mask
  */
-class DateRange extends Date
+class DateRange extends Text //Date
 {
-    /** @var string */
-    protected $condition = 'BETWEEN ? AND ?';
+    protected mixed $condition = 'BETWEEN ? AND ?';
 
-    /** @var string */
-    protected $mask = '/(.*)\s?-\s?(.*)/';
+    protected string $mask = '/(.*)\s?-\s?(.*)/';
 
-    /** @var array */
-    protected $dateFormatOutput = ['Y-m-d', 'Y-m-d G:i:s'];
+    protected string $dateFormatInput = 'd.m.Y';
+
+    protected array $dateFormatOutput = ['Y-m-d', 'Y-m-d G:i:s'];
+
 
     /**
-     * @param string $formatFrom
-     * @param string $formatTo
-     * @return \Grido\Components\Filters\DateRange
+     * Sets mask by regular expression.
      */
-    public function setDateFormatOutput($formatFrom, $formatTo = NULL)
+    public function setMask(string $mask): static
     {
-        $formatTo = $formatTo === NULL
+        $this->mask = $mask;
+        return $this;
+    }
+
+
+    public function getMask(): string
+    {
+        return $this->mask;
+    }
+
+
+    public function setDateFormatInput(string $format): static
+    {
+        $this->dateFormatInput = $format;
+        return $this;
+    }
+
+
+    public function getDateFormatInput(): string
+    {
+        return $this->dateFormatInput;
+    }
+
+
+    public function setDateFormatOutput(string $formatFrom, ?string $formatTo = null): static
+    {
+        $formatTo = $formatTo === null
             ? $formatFrom
             : $formatTo;
 
@@ -48,29 +75,14 @@ class DateRange extends Date
         return $this;
     }
 
-    /**
-     * Sets mask by regular expression.
-     * @param string $mask
-     * @return DateRange
-     */
-    public function setMask($mask)
+
+    public function getDateFormatOutput(): array
     {
-        $this->mask = $mask;
-        return $this;
+        return $this->dateFormatOutput;
     }
 
-    /**
-     * @return string
-     */
-    public function getMask()
-    {
-        return $this->mask;
-    }
 
-    /**
-     * @return \Nette\Forms\Controls\TextInput
-     */
-    protected function getFormControl()
+    protected function getFormControl(): TextInput
     {
         $control = parent::getFormControl();
 
@@ -81,19 +93,22 @@ class DateRange extends Date
         return $control;
     }
 
+
     /**
-     * @param string $value
-     * @return Condition|bool
      * @throws \Exception
      * @internal
      */
-    public function __getCondition($value)
+    public function __getCondition(mixed $value): ?Condition
     {
-        if ($this->where === NULL && is_string($this->condition)) {
+        if ($value === '' || $value === null) {
+            return null; //skip
+        }
 
-            list (, $from, $to) = \Nette\Utils\Strings::match($value, $this->mask);
-            $from = \DateTime::createFromFormat($this->dateFormatInput, trim($from));
-            $to = \DateTime::createFromFormat($this->dateFormatInput, trim($to));
+        if ($this->where === null && is_string($this->condition)) {
+
+            list(, $from, $to) = \Nette\Utils\Strings::match($value, $this->mask);
+            $from = \DateTime::createFromFormat($this->dateFormatInput, trim((string) $from));
+            $to = \DateTime::createFromFormat($this->dateFormatInput, trim((string) $to));
 
             if ($to && !Strings::match($this->dateFormatInput, '/G|H/i')) { //input format haven't got hour option
                 Strings::contains($this->dateFormatOutput[1], 'G') || Strings::contains($this->dateFormatOutput[1], 'H')
@@ -103,7 +118,7 @@ class DateRange extends Date
 
             $values = $from && $to
                 ? [$from->format($this->dateFormatOutput[0]), $to->format($this->dateFormatOutput[1])]
-                : NULL;
+                : null;
 
             return $values
                 ? Condition::setup($this->getColumn(), $this->condition, $values)

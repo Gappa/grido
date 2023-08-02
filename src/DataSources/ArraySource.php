@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * This file is part of the Grido (https://github.com/o5/grido)
+ * This file is part of the Grido (http://grido.bugyik.cz)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -29,30 +31,23 @@ use Nette;
  */
 class ArraySource implements IDataSource
 {
+
     use Nette\SmartObject;
+    protected array $data;
 
-    /** @var array */
-    protected $data;
 
-    /**
-     * @param array $data
-     */
     public function __construct(array $data)
     {
         $this->data = $data;
     }
 
+
     /**
      * This method needs tests!
-     * @param Condition $condition
-     * @param array $data
-     * @return array
      */
-    protected function makeWhere(Condition $condition, array $data = NULL)
+    protected function makeWhere(Condition $condition, array $data = null): array
     {
-        $data = $data === NULL
-            ? $this->data
-            : $data;
+        $data = $data === null ? $this->data : $data;
 
         return array_filter($data, function ($row) use ($condition) {
             if ($condition->callback) {
@@ -64,13 +59,12 @@ class ArraySource implements IDataSource
             foreach ($condition->column as $column) {
                 if (Condition::isOperator($column)) {
                     $results[] = " $column ";
-
                 } else {
                     $i = count($condition->condition) > 1 ? $i : 0;
                     $results[] = (int) $this->compare(
                         $row[$column],
                         $condition->condition[$i],
-                        isset($condition->value[$i]) ? $condition->value[$i] : NULL
+                        isset($condition->value[$i]) ? $condition->value[$i] : null
                     );
 
                     $i++;
@@ -78,20 +72,15 @@ class ArraySource implements IDataSource
             }
 
             $result = implode('', $results);
-            return count($condition->column) === 1
-                ? (bool) $result
-                : eval("return $result;"); // QUESTION: How to remove this eval? hmmm?
+            return count($condition->column) === 1 ? (bool) $result : eval("return $result;"); // QUESTION: How to remove this eval? hmmm?
         });
     }
 
+
     /**
-     * @param string $actual
-     * @param string $condition
-     * @param mixed $expected
      * @throws Exception
-     * @return bool
      */
-    public function compare($actual, $condition, $expected)
+    public function compare(string $actual, string $condition, mixed $expected): bool
     {
         $expected = (array) $expected;
         $expected = current($expected);
@@ -103,75 +92,57 @@ class ArraySource implements IDataSource
 
             $pattern = str_replace('%', '(.|\s)*', preg_quote($expected, '/'));
             return (bool) preg_match("/^{$pattern}$/i", $actual);
-
         } elseif ($cond === '=') {
             return $actual == $expected;
-
         } elseif ($cond === '<>') {
             return $actual != $expected;
-
-        } elseif ($cond === 'IS NULL') {
-            return $actual === NULL;
-
-        } elseif ($cond === 'IS NOT NULL') {
-            return $actual !== NULL;
-
+        } elseif ($cond === 'IS null') {
+            return $actual === null;
+        } elseif ($cond === 'IS NOT null') {
+            return $actual !== null;
         } elseif ($cond === '<') {
             return (int) $actual < $expected;
-
         } elseif ($cond === '<=') {
             return (int) $actual <= $expected;
-
         } elseif ($cond === '>') {
             return (int) $actual > $expected;
-
         } elseif ($cond === '>=') {
             return (int) $actual >= $expected;
-
         } else {
             throw new Exception("Condition '$condition' is not implemented yet.");
         }
     }
 
-    /*********************************** interface IDataSource ************************************/
 
-    /**
-     * @return int
-     */
-    public function getCount()
+    /*	 * ********************************* interface IDataSource *********************************** */
+
+    public function getCount(): int
     {
         return count($this->data);
     }
 
-    /**
-     * @return array
-     */
-    public function getData()
+
+    public function getData(): array
     {
         return $this->data;
     }
 
-    /**
-     * @param array $conditions
-     */
-    public function filter(array $conditions)
+
+    public function filter(array $conditions): void
     {
         foreach ($conditions as $condition) {
             $this->data = $this->makeWhere($condition);
         }
     }
 
-    /**
-     * @param int $offset
-     * @param int $limit
-     */
-    public function limit($offset, $limit)
+
+    public function limit(int $offset, int $limit): void
     {
         $this->data = array_slice($this->data, $offset, $limit);
     }
 
+
     /**
-     * @param array $sorting
      * @throws Exception
      */
     public function sort(array $sorting)
@@ -202,14 +173,11 @@ class ArraySource implements IDataSource
         }
     }
 
+
     /**
-     * @param mixed $column
-     * @param array $conditions
-     * @param int $limit
-     * @return array
      * @throws Exception
      */
-    public function suggest($column, array $conditions, $limit)
+    public function suggest(mixed $column, array $conditions, int $limit): array
     {
         $data = $this->data;
         foreach ($conditions as $condition) {

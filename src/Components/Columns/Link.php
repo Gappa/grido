@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Grido (https://github.com/o5/grido)
  *
@@ -11,6 +13,8 @@
 
 namespace Grido\Components\Columns;
 
+use Nette\Utils\Html;
+
 /**
  * Link column.
  *
@@ -20,20 +24,15 @@ namespace Grido\Components\Columns;
  */
 class Link extends Text
 {
-    /**
-     * @param mixed $value
-     * @return \Nette\Utils\Html
-     */
-    protected function formatValue($value)
+
+
+    protected function formatValue(mixed $value): Html
     {
         return $this->getAnchor($value);
     }
 
-    /**
-     * @param string $value
-     * @return string
-     */
-    protected function formatHref($value)
+
+    protected function formatHref(string $value): string
     {
         if (!preg_match('~^\w+://~i', $value)) {
             $value = "http://" . $value;
@@ -42,29 +41,23 @@ class Link extends Text
         return $value;
     }
 
-    /**
-     * @param string $value
-     * @return string
-     */
-    protected function formatText($value)
+
+    protected function formatText(string $value): string
     {
         return preg_replace('~^https?://~i', '', $value);
     }
 
-    /**
-     * @param mixed $value
-     * @return \Nette\Utils\Html
-     */
-    protected function getAnchor($value)
+
+    protected function getAnchor(mixed $value): Html
     {
         $truncate = $this->truncate;
-        $this->truncate = NULL;
+        $this->truncate = null;
 
-        $value = parent::formatValue($value);
+        $value = (string) parent::formatValue($value);
         $href = $this->formatHref($value);
         $text = $this->formatText($value);
 
-        $anchor = \Nette\Utils\Html::el('a')
+        $anchor = Html::el('a')
             ->setHref($href)
             ->setText($text)
             ->setTarget('_blank')

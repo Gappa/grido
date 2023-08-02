@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * This file is part of the Grido (https://github.com/o5/grido)
+ * This file is part of the Grido (http://grido.bugyik.cz)
  *
  * Copyright (c) 2011 Petr Bugyík (http://petr.bugyik.cz)
  *
@@ -11,6 +13,9 @@
 
 namespace Grido\DataSources;
 
+use Dibi\Fluent;
+use Dibi\Row;
+use Grido\Components\Filters\Condition;
 use Grido\Exception;
 use Nette;
 
@@ -21,7 +26,7 @@ use Nette;
  * @subpackage  DataSources
  * @author      Petr Bugyík
  *
- * @property-read \Dibi\Fluent $fluent
+ * @property-read Fluent $fluent
  * @property-read int $limit
  * @property-read int $offset
  * @property-read int $count
@@ -29,58 +34,43 @@ use Nette;
  */
 class DibiFluent implements IDataSource
 {
-    use \Nette\SmartObject;
 
-    /** @var \Dibi\Fluent */
-    protected $fluent;
+    use Nette\SmartObject;
 
-    /** @var int */
-    protected $limit;
+    protected Fluent $fluent;
 
-    /** @var int */
-    protected $offset;
+    protected int $limit;
 
-    /**
-     * @param \Dibi\Fluent $fluent
-     */
-    public function __construct(\Dibi\Fluent $fluent)
+    protected int $offset;
+
+
+    public function __construct(Fluent $fluent)
     {
         $this->fluent = $fluent;
     }
 
-    /**
-     * @return \Dibi\Fluent
-     */
-    public function getFluent()
+
+    public function getFluent(): Fluent
     {
         return $this->fluent;
     }
 
-    /**
-     * @return int
-     */
-    public function getLimit()
+
+    public function getLimit(): int
     {
         return $this->limit;
     }
 
-    /**
-     * @return int
-     */
-    public function getOffset()
+
+    public function getOffset(): int
     {
         return $this->offset;
     }
 
-    /**
-     * @param \Grido\Components\Filters\Condition $condition
-     * @param \Dibi\Fluent $fluent
-     */
-    protected function makeWhere(\Grido\Components\Filters\Condition $condition, \Dibi\Fluent $fluent = NULL)
+
+    protected function makeWhere(Condition $condition, Fluent $fluent = null): void
     {
-        $fluent = $fluent === NULL
-            ? $this->fluent
-            : $fluent;
+        $fluent = $fluent === null ? $this->fluent : $fluent;
 
         if ($condition->callback) {
             call_user_func_array($condition->callback, [$condition->value, $fluent]);
@@ -89,15 +79,13 @@ class DibiFluent implements IDataSource
         }
     }
 
-    /********************************** inline editation helpers ************************************/
+
+    /*	 * ******************************** inline editation helpers *********************************** */
 
     /**
      * Default callback used when an editable column has customRender.
-     * @param mixed $id
-     * @param string $idCol
-     * @return \DibiRow
      */
-    public function getRow($id, $idCol)
+    public function getRow(mixed $id, string $idCol): Row
     {
         $fluent = clone $this->fluent;
         return $fluent
@@ -105,63 +93,49 @@ class DibiFluent implements IDataSource
             ->fetch();
     }
 
-    /*********************************** interface IDataSource ************************************/
 
-    /**
-     * @return int
-     */
-    public function getCount()
+    /*	 * ********************************* interface IDataSource *********************************** */
+
+    public function getCount(): int
     {
         $fluent = clone $this->fluent;
         return $fluent->count();
     }
 
-    /**
-     * @return array
-     */
-    public function getData()
+
+    public function getData(): array
     {
         return $this->fluent->fetchAll($this->offset, $this->limit);
     }
 
-    /**
-     * @param array $conditions
-     */
-    public function filter(array $conditions)
+
+    public function filter(array $conditions): void
     {
         foreach ($conditions as $condition) {
             $this->makeWhere($condition);
         }
     }
 
-    /**
-     * @param int $offset
-     * @param int $limit
-     */
-    public function limit($offset, $limit)
+
+    public function limit(int $offset, int $limit): void
     {
         $this->offset = $offset;
         $this->limit = $limit;
     }
 
-    /**
-     * @param array $sorting
-     */
-    public function sort(array $sorting)
+
+    public function sort(array $sorting): void
     {
         foreach ($sorting as $column => $sort) {
             $this->fluent->orderBy("%n", $column, $sort);
         }
     }
 
+
     /**
-     * @param mixed $column
-     * @param array $conditions
-     * @param int $limit
-     * @return array
      * @throws Exception
      */
-    public function suggest($column, array $conditions, $limit)
+    public function suggest(mixed $column, array $conditions, int $limit): array
     {
         $fluent = clone $this->fluent;
         if (is_string($column)) {
