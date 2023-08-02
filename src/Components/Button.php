@@ -41,7 +41,7 @@ class Button extends Component
     protected array $arguments = [];
 
     // <a> html tag
-    protected Html $elementPrototype;
+    protected ?Html $elementPrototype = null;
 
     protected array $options = [];
 
