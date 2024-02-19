@@ -798,7 +798,7 @@ class Grid extends Components\Container
     /**
      * @internal
      */
-    public function createTemplate(): \Nette\Application\UI\Template
+    public function createTemplate(?string $class = null): \Nette\Application\UI\Template
     {
         $template = parent::createTemplate();
         $template->setFile($this->getCustomization()->getTemplateFiles()[Customization::TEMPLATE_DEFAULT]);
