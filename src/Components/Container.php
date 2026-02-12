@@ -76,7 +76,7 @@ abstract class Container extends \Nette\Application\UI\Control
     }
 
 
-    public function getExport(string $name = null, bool $need = true): ?BaseExport
+    public function getExport(?string $name = null, bool $need = true): ?BaseExport
     {
         if (is_bool($name) || $name === null) { // deprecated
             trigger_error('This usage of ' . __METHOD__ . '() is deprecated,
