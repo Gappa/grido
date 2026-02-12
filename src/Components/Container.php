@@ -282,7 +282,7 @@ abstract class Container extends \Nette\Application\UI\Control
     }
 
 
-    public function addFilterSelect(string $name, string $label, array $items = null, bool $multiple = false): Filters\Select
+    public function addFilterSelect(string $name, string $label, ?array $items = null, bool $multiple = false): Filters\Select
     {
         return new Filters\Select($this, $name, $label, $items, $multiple);
     }
