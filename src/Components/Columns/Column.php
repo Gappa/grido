@@ -365,7 +365,7 @@ abstract class Column extends \Grido\Components\Component
     }
 
 
-    public function setFilterSelect(array $items = null, bool $multiple = false): Select
+    public function setFilterSelect(?array $items = null, bool $multiple = false): Select
     {
         return $this->grid->addFilterSelect($this->getName(), $this->label, $items, $multiple);
     }

@@ -1,0 +1,27 @@
+includes:
+	- baseline.neon
+	- disallowed-function-calls.neon
+#	- phar://phpstan.phar/conf/bleedingEdge.neon
+
+parameters:
+	parallel:
+#		maximumNumberOfProcesses: 2
+	tmpDir: %currentWorkingDirectory%/temp/phpstan/
+	bootstrapFiles:
+		- bootstrap.php
+	scanDirectories:
+		- %currentWorkingDirectory%/vendor/
+
+	paths:
+		- %currentWorkingDirectory%/src/
+
+	excludePaths:
+
+	level: 7
+
+	treatPhpDocTypesAsCertain: false
+	reportUnmatchedIgnoredErrors: true # default, but to turn it off when needed
+	ignoreErrors:
+		# Specific error messages
+		-
+			identifier: trait.unused

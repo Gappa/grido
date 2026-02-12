@@ -49,7 +49,7 @@ class NetteDatabase implements IDataSource
     }
 
 
-    protected function makeWhere(Condition $condition, Selection $selection = null): void
+    protected function makeWhere(Condition $condition, ?Selection $selection = null): void
     {
         $selection = $selection === null ? $this->selection : $selection;
 

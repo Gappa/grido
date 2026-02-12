@@ -1,8 +1,17 @@
 /vendor
+temp/*
 /composer.lock
 /tests/tmp
 /tests/*/output
 coverage.xml
 node_modules/
 /nbproject/private/
-/.idea/
+
+# Common ignores
+.svn/*
+.git/*
+.hg/*
+.idea/*
+
+*.cache
+*.bak

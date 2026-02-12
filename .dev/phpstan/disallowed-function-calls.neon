@@ -1,0 +1,16 @@
+parameters:
+	disallowedFunctionCalls:
+		-
+			function: 'dump()'
+		-
+			function: 'dumpe()'
+		-
+			function: 'bdump()'
+		-
+			function: 'var_dump()'
+		-
+			function: 'var_export()'
+		-
+			function: 'phpinfo()'
+		-
+			function: 'print_r()'

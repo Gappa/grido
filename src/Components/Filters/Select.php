@@ -32,7 +32,7 @@ class Select extends Filter
     /**
      * @param array|null $items for select
      */
-    public function __construct(Grid $grid, string $name, string $label, array $items = null, bool $multiple = false)
+    public function __construct(Grid $grid, string $name, string $label, ?array $items = null, bool $multiple = false)
     {
         $this->multiple = $multiple;
         parent::__construct($grid, $name, $label);

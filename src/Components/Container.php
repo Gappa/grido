@@ -327,7 +327,7 @@ abstract class Container extends \Nette\Application\UI\Control
     /**
      * @deprecated
      */
-    public function setExport(string $label = null): CsvExport
+    public function setExport(?string $label = null): CsvExport
     {
         trigger_error(__METHOD__ . '() is deprecated; use addExport instead.', E_USER_DEPRECATED);
         return $this->addExport(new CsvExport($label), CsvExport::CSV_ID);
